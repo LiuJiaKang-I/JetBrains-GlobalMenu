@@ -24,8 +24,8 @@ library {
         else if (osFamily.isWindows) compileTask.includes.from("$dir/win32")
 
         compileTask.source.from(fileTree(mapOf("dir" to "src/main/c", "include" to "**/*.c")))
-        compileTask.source.from(fileTree(mapOf("dir" to layout.buildDirectory.dir("generated"), "include" to "**/*.c")))
-        compileTask.includes.from(layout.buildDirectory.dir("generated"))
+        compileTask.source.from(fileTree(mapOf("dir" to layout.buildDirectory.dir("generated/wayland"), "include" to "**/*.c")))
+        compileTask.includes.from(layout.buildDirectory.dir("generated/wayland"))
 
         if (toolChain is VisualCpp) {
             compileTask.compilerArgs.addAll("/TC")
@@ -58,13 +58,13 @@ tasks {
     val generateAppmenuHeader by registering(RunToolTask::class) {
         group = "custom"
         inputFile = file("src/main/protocols/appmenu.xml")
-        outputFile = layout.buildDirectory.file("generated/appmenu.h")
+        outputFile = layout.buildDirectory.file("generated/wayland/appmenu.h")
         commandLine("wayland-scanner", "client-header", inputFile.asFile.get().absolutePath, outputFile.asFile.get().absolutePath)
     }
     val generateAppmenuGlue by registering(RunToolTask::class) {
         group = "custom"
         inputFile = file("src/main/protocols/appmenu.xml")
-        outputFile = layout.buildDirectory.file("generated/appmenu.c")
+        outputFile = layout.buildDirectory.file("generated/wayland/appmenu.c")
         commandLine("wayland-scanner", "private-code", inputFile.asFile.get().absolutePath, outputFile.asFile.get().absolutePath)
     }
     afterEvaluate {

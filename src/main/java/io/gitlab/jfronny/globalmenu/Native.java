@@ -10,17 +10,24 @@ public class Native {
     public native void destroy(long ptr);
     public native void setAddress(long ptr, String serviceName, String objectPath);
 
+    private static final boolean supported;
     static {
-        if (System.getProperty("os.name").toLowerCase().contains("linux")) {
+        if (!System.getProperty("os.name").toLowerCase().contains("linux")) {
+            supported = false;
+        } else {
             try (InputStream is = Native.class.getResourceAsStream("/libnative.so")) {
                 Path path = Files.createTempFile("libnative", ".so");
                 Files.copy(is, path, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
                 System.load(path.toString());
             } catch (Exception e) {
+                supported = false;
                 throw new RuntimeException(e);
             }
-        } else {
-            throw new RuntimeException("Linux is required for the global menu plugin");
+            supported = true;
         }
+    }
+
+    public boolean isSupported() {
+        return supported;
     }
 }

@@ -4,6 +4,8 @@ import com.intellij.ide.AppLifecycleListener
 
 class InitializationComponent : AppLifecycleListener {
     override fun appFrameCreated(commandLineArgs: MutableList<String>) {
-        GlobalMenu.Native.init(getDisplayPtr())
+        if (GlobalMenu.Native.isSupported) {
+            GlobalMenu.Native.init(getDisplayPtr())
+        }
     }
 }

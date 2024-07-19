@@ -10,6 +10,7 @@ import javax.swing.JMenuBar
 class GlobalMenuService(private val app: Application) : ApplicationActivationListener {
     override fun applicationActivated(ideFrame: IdeFrame) {
         super.applicationActivated(ideFrame)
+        if (!GlobalMenu.Native.isSupported) return
         ideFrame.project?.let { project ->
             println(ideFrame.javaClass)
             if (ideFrame is ProjectFrameHelper) {
