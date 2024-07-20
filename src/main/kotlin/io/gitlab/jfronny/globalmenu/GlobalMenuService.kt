@@ -1,10 +1,16 @@
 package io.gitlab.jfronny.globalmenu
 
+import com.canonical.Dbusmenu
+import com.canonical.appmenu.Registrar
 import com.intellij.openapi.application.Application
 import com.intellij.openapi.application.ApplicationActivationListener
 import com.intellij.openapi.wm.IdeFrame
 import com.intellij.openapi.wm.impl.IdeFrameImpl
 import com.intellij.openapi.wm.impl.ProjectFrameHelper
+import io.gitlab.jfronny.globalmenu.proxy.DbusmenuImpl
+import org.freedesktop.dbus.DBusPath
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder
+import org.freedesktop.dbus.types.UInt32
 import javax.swing.JMenuBar
 
 class GlobalMenuService(private val app: Application) : ApplicationActivationListener {
@@ -34,11 +40,20 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
                 GlobalMenu.Log.warn("${submenu.text}.${component?.text}")
             }
         }
-        peer.performLocked {
-            val ptr = GlobalMenu.Native.create(peer.nativePtr)
-//            peer.registerCleaner {
-//                GlobalMenu.Native.destroy(ptr)
-//            }
+        val conn = DBusConnectionBuilder.forSessionBus().build()
+
+        val menu: Dbusmenu = DbusmenuImpl()
+        // firefox seems to use mObjectPath(nsPrintfCString("/com/canonical/menu/%u", sID++))
+        conn.exportObject("/com/canonical/dbusmenu", menu)
+
+        if (peer is WLPeer) {
+            peer.performLocked {
+                val ptr = GlobalMenu.Native.create(peer.nativePtr)
+                GlobalMenu.Native.setAddress(ptr, conn.uniqueName, menu.objectPath)
+            }
+        } else {
+            val registrar = conn.getRemoteObject("org.canonical.AppMenu.Registrar", "/com/canonical/AppMenu/Registrar", Registrar::class.java)
+            registrar.RegisterWindow(UInt32(peer.nativePtr), DBusPath(menu.objectPath))
         }
     }
 }

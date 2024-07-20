@@ -15,17 +15,35 @@ private val peerField = Component::class.java.getDeclaredField("peer").apply { i
 
 val Component.peer: Peer get() = Peer(peerField.get(this))
 
-private val componentPeerClass = Class.forName("sun.awt.wl.WLComponentPeer")
-private val performLockedMethod = Reflect.instanceProcedure(componentPeerClass, "performLocked", Runnable::class.java).unchecked1
-private val nativePtrField = componentPeerClass.getDeclaredField("nativePtr").apply { setAccessible(this) }
+sealed interface Peer {
+    val nativePtr: Long
+}
+fun Peer(peer: Any): Peer {
+    if (X11Peer.componentPeerClass.isInstance(peer)) return X11Peer(peer)
+    if (WLPeer.componentPeerClass.isInstance(peer)) return WLPeer(peer)
+    throw IllegalArgumentException("Unknown peer type: ${peer.javaClass}")
+}
+class X11Peer(private val inner: Any) : Peer {
+    override val nativePtr: Long get() = getPtrMethod(inner)
 
-class Peer(private val inner: Any) {
-    val nativePtr: Long get() = nativePtrField.getLong(inner)
+    companion object {
+        val componentPeerClass = Class.forName("sun.awt.X11.XComponentPeer")
+        private val getPtrMethod = Reflect.instanceFunction(componentPeerClass, "getWindow", Long::class.java).unchecked
+    }
+}
+class WLPeer(private val inner: Any) : Peer {
+    override val nativePtr: Long get() = nativePtrField.getLong(inner)
     fun performLocked(runnable: Runnable) {
         performLockedMethod(inner, runnable)
     }
     fun registerCleaner(runnable: Runnable) {
         GlobalMenu.Cleaner.register(this, runnable)
+    }
+
+    companion object {
+        val componentPeerClass = Class.forName("sun.awt.wl.WLComponentPeer")
+        private val performLockedMethod = Reflect.instanceProcedure(componentPeerClass, "performLocked", Runnable::class.java).unchecked1
+        private val nativePtrField = componentPeerClass.getDeclaredField("nativePtr").apply { setAccessible(this) }
     }
 }
 
