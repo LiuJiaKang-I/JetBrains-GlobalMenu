@@ -1,5 +1,7 @@
 package io.gitlab.jfronny.globalmenu.proxy
 
+import com.intellij.openapi.actionSystem.impl.ActionMenu
+import com.intellij.openapi.actionSystem.impl.ActionMenuItem
 import javax.swing.JMenuBar
 import javax.swing.JMenuItem
 
@@ -12,15 +14,20 @@ class SwingMenuHolder(bar: JMenuBar, menuName: String): MenuHolder {
     }
 
     private fun find(parent: Menu, menuId: Int): Menu? {
-        parent.children?.forEach {
-            if (it.id == menuId) return it
-            val found = find(it, menuId)
-            if (found != null) return found
+        return parent.children?.let { children ->
+            for (child in children) {
+                if (child.id == menuId) return child
+                val found = find(child, menuId)
+                if (found != null) return found
+            }
+            null
         }
-        return null
     }
 
-    fun getId(menuItem: JMenuItem?): Int {
-        return System.identityHashCode(menuItem)
+    fun getId(menuItem: JMenuItem?): Int = when (menuItem) {
+        is ActionMenu -> menuItem.anAction.toString().hashCode()
+        is ActionMenuItem -> menuItem.anAction.toString().hashCode()
+        else -> System.identityHashCode(menuItem)
     }
+    fun update(items: List<ActionMenu>) = root.update(items)
 }

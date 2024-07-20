@@ -1,6 +1,11 @@
 package io.gitlab.jfronny.globalmenu.proxy
 
+import com.intellij.openapi.actionSystem.impl.ActionMenu
+import com.intellij.openapi.actionSystem.impl.ActionMenuItem
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.EDT
 import io.gitlab.jfronny.globalmenu.GlobalMenu
+import kotlinx.coroutines.*
 import org.apache.commons.io.output.ByteArrayOutputStream
 import java.awt.event.ActionEvent
 import java.awt.event.InputEvent
@@ -13,6 +18,7 @@ import javax.swing.JCheckBoxMenuItem
 import javax.swing.JMenu
 import javax.swing.JMenuItem
 import javax.swing.JRadioButtonMenuItem
+import javax.swing.JSeparator
 
 class SwingMenu(private val menuItem: JMenuItem?, private val holder: SwingMenuHolder) : Menu {
     override val id = holder.getId(menuItem)
@@ -64,20 +70,76 @@ class SwingMenu(private val menuItem: JMenuItem?, private val holder: SwingMenuH
     }
 
     override val toggleType: String? get() = when (menuItem) {
+        is ActionMenuItem -> {
+            //TODO handle action items
+            if (menuItem.isToggleable) "checkmark"
+            else null
+        }
         is JRadioButtonMenuItem -> "radio"
         is JCheckBoxMenuItem -> "checkmark"
         else -> null
     }
     override val toggleState: Int get() = if (toggleType?.isNotEmpty() == true) if (menuItem!!.isSelected) 1 else 0 else -1
-    override val children: List<Menu>? get() = if (menuItem is JMenu) {
-        (0 until menuItem.itemCount).map { SwingMenu(menuItem.getItem(it), holder) }
-    } else null
+    private var _children: List<Menu>? = null
+    override val children: List<Menu>? get() = _children
 
     override fun onEvent() {
         val event = ActionEvent(menuItem, ActionEvent.ACTION_PERFORMED, menuItem!!.actionCommand)
-        for (it in menuItem.actionListeners) it.actionPerformed(event)
-        if (menuItem is JCheckBoxMenuItem) menuItem.isSelected = !menuItem.isSelected
-        if (menuItem is JRadioButtonMenuItem) menuItem.isSelected = true
+        ApplicationManager.getApplication().invokeLater {
+            for (it in menuItem.actionListeners) it.actionPerformed(event)
+        }
+        menuItem.doClick()
+        GlobalMenu.Log.warn("Event $event for menu $id (${menuItem.javaClass})")
+        when (menuItem) {
+            is JCheckBoxMenuItem -> menuItem.isSelected = !menuItem.isSelected
+            is JRadioButtonMenuItem -> menuItem.isSelected = true
+        }
+    }
+
+    override fun update() {
+        try {
+            if (menuItem is ActionMenu) {
+                runBlocking {
+                    launch(Dispatchers.EDT) {
+                        menuItem.removeAll()
+                        menuItem.isSelected = true
+                        menuItem.fillMenu()
+                        syncChildren(2)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            GlobalMenu.Log.error("Failed to update menu", e)
+            throw e
+        }
+    }
+
+    fun syncChildren(deepness: Int) {
+        GlobalMenu.Log.warn("Syncing children for $label")
+        _children = when (menuItem) {
+            is ActionMenu -> {
+                val ch = mutableListOf<Menu>()
+                for (each in menuItem.popupMenu.components) {
+                    if (each == null) continue
+                    if (each is JSeparator) {
+                        ch.add(SwingMenu(null, holder))
+                        continue
+                    }
+                    if (each !is JMenuItem) continue
+                    val cmi = SwingMenu(each, holder)
+                    if (deepness > 1 && each is ActionMenu) {
+                        each.removeAll()
+                        each.isSelected = true
+                        each.fillMenu()
+                        cmi.syncChildren(deepness - 1)
+                    }
+                    ch.add(cmi)
+                }
+                ch
+            }
+            is JMenu -> (0 until menuItem.itemCount).map { SwingMenu(menuItem.getItem(it), holder) }
+            else -> null
+        }
     }
 
     companion object {

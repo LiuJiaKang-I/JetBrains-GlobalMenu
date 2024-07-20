@@ -1,8 +1,9 @@
 package io.gitlab.jfronny.globalmenu.proxy
 
+import com.intellij.openapi.actionSystem.impl.ActionMenu
 import javax.swing.JMenuItem
 
-class SwingRootMenu(private val menuItems: List<JMenuItem>?, private val name: String, private val holder: SwingMenuHolder): Menu {
+class SwingRootMenu(private var menuItems: List<JMenuItem>?, private val name: String, private val holder: SwingMenuHolder): Menu {
     override val id: Int get() = 0
     override val isSeparator: Boolean get() = menuItems == null
     override val label: String get() = name
@@ -12,8 +13,26 @@ class SwingRootMenu(private val menuItems: List<JMenuItem>?, private val name: S
     override val shortcut: Array<String>? get() = null
     override val toggleType: String? get() = null
     override val toggleState: Int get() = 0
-    override val children: List<Menu>? get() = menuItems?.map { SwingMenu(it, holder) }
+    private var _children: List<Menu>? = null
+    override val children: List<Menu>? get() = _children
 
     override fun onEvent() {
+    }
+
+    override fun update() {
+        syncChildren()
+    }
+
+    fun update(items: List<ActionMenu>) {
+        menuItems = items
+        syncChildren()
+    }
+
+    init {
+        syncChildren()
+    }
+
+    private fun syncChildren() {
+        _children = menuItems?.map { SwingMenu(it, holder).apply { syncChildren(1) } }
     }
 }

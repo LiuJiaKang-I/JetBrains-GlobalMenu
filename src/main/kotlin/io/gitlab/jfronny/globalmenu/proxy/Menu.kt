@@ -12,4 +12,5 @@ interface Menu {
     val toggleState: Int
     val children: List<Menu>?
     fun onEvent()
+    fun update()
 }

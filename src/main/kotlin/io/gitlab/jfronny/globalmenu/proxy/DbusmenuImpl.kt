@@ -2,6 +2,7 @@ package io.gitlab.jfronny.globalmenu.proxy
 
 import com.canonical.*
 import io.gitlab.jfronny.globalmenu.DPair
+import io.gitlab.jfronny.globalmenu.GlobalMenu
 import org.freedesktop.dbus.types.UInt32
 import org.freedesktop.dbus.types.Variant
 
@@ -65,9 +66,16 @@ class DbusmenuImpl(windowId: Long, private val menuHolder: MenuHolder) : Dbusmen
         return properties
     }
 
-    override fun Event(id: Int, eventId: String?, data: Variant<*>?, timestamp: UInt32?) {
-        if ("clicked".endsWith(eventId!!)) { //TODO this seems off
-            menuHolder.find(id)?.onEvent()
+    override fun Event(id: Int, eventId: String, data: Variant<*>?, timestamp: UInt32?) {
+        GlobalMenu.Log.warn("Event $eventId for menu $id (${menuHolder.find(id)})")
+        try {
+            when (eventId) {
+                "clicked" -> menuHolder.find(id)?.onEvent()
+                "opened" -> menuHolder.find(id)?.update()
+            }
+        } catch (e: Exception) {
+            GlobalMenu.Log.error("Failed to handle event $eventId for menu $id", e)
+            throw e
         }
     }
 
