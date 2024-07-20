@@ -10,7 +10,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.github.hypfvieh:dbus-java-utils:5.0.0")
+        classpath("com.github.hypfvieh:dbus-java-utils:4.3.2")
     }
 }
 

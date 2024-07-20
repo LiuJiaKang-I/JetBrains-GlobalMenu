@@ -1,58 +1,77 @@
 package io.gitlab.jfronny.globalmenu.proxy
 
 import com.canonical.*
+import io.gitlab.jfronny.globalmenu.DPair
 import org.freedesktop.dbus.types.UInt32
 import org.freedesktop.dbus.types.Variant
 
-class DbusmenuImpl : Dbusmenu {
-    override fun getObjectPath(): String {
-        TODO("Not yet implemented")
+class DbusmenuImpl(windowId: Long, private val menuHolder: MenuHolder) : Dbusmenu {
+    private val menuPath: String = "/com/canonical/menu0x${windowId.toString(16)}"
+    override fun getObjectPath(): String = menuPath
+//    override fun getVersion(): UInt32 = UInt32(3)
+//    override fun getTextDirection(): String = "none"
+//    override fun getStatus(): String = "normal"
+//
+//    override fun getIconThemePath(): Dbusmenu.PropertyIconThemePathType =
+//        object : Dbusmenu.PropertyIconThemePathType, List<String> by listOf() {}
+
+    override fun GetLayout(parentId: Int, recursionDepth: Int, propertyNames: MutableList<String>?): DPair<UInt32, GetLayoutStruct> {
+        return DPair(
+            UInt32(parentId.toLong()),
+            getLayout(parentId, recursionDepth, propertyNames, menuHolder.find(parentId)!!)
+        )
     }
 
-    override fun getVersion(): UInt32 {
-        TODO("Not yet implemented")
-    }
+    private fun getLayout(parentId: Int, recursionDepth: Int, propertyNames: MutableList<String>?, menu: Menu): GetLayoutStruct {
+        val properties = readProperties(menu)
+        val children = mutableListOf<Variant<*>>()
 
-    override fun getTextDirection(): String {
-        TODO("Not yet implemented")
-    }
+        menu.children?.let {
+            for (sm in it) {
+                children.add(Variant(getLayout(parentId, recursionDepth, propertyNames, sm)))
+            }
+            if (it.isNotEmpty()) properties["children-display"] = Variant("submenu")
+        }
 
-    override fun getStatus(): String {
-        TODO("Not yet implemented")
-    }
-
-    override fun getIconThemePath(): Dbusmenu.PropertyIconThemePathType {
-        TODO("Not yet implemented")
-    }
-
-    override fun GetLayout(parentId: Int, recursionDepth: Int, propertyNames: MutableList<String>?): GetLayoutTuple {
-        TODO("Not yet implemented")
+        return GetLayoutStruct(menu.id, properties, children)
     }
 
     override fun GetGroupProperties(
-        ids: MutableList<Int>?,
+        ids: MutableList<Int>,
         propertyNames: MutableList<String>?
-    ): MutableList<GetGroupPropertiesStruct> {
-        TODO("Not yet implemented")
+    ): MutableList<GetGroupPropertiesStruct> = mutableListOf<GetGroupPropertiesStruct>().apply {
+        ids.forEach { id ->
+            menuHolder.find(id)?.let { menu ->
+                add(GetGroupPropertiesStruct(id, readProperties(menu)))
+            }
+        }
     }
 
-    override fun GetProperty(id: Int, name: String?): Variant<*> {
-        TODO("Not yet implemented")
+    override fun GetProperty(id: Int, name: String?): Variant<*>? = menuHolder.find(id)?.let { menu -> readProperties(menu)[name] }
+
+    private fun readProperties(menu: Menu): MutableMap<String, Variant<*>> {
+        if (menu.isSeparator) return mutableMapOf("type" to Variant("separator"))
+        val properties = mutableMapOf<String, Variant<*>>()
+        properties["type"] = Variant("standard")
+        properties["label"] = Variant(menu.label)
+        properties["visible"] = Variant(menu.isVisible)
+        properties["enabled"] = Variant(menu.isEnabled)
+        if (!menu.shortcut.isNullOrEmpty()) properties["shortcut"] = Variant(menu.shortcut)
+        if (!menu.toggleType.isNullOrEmpty()) {
+            properties["toggle-type"] = Variant(menu.toggleType)
+            properties["toggle-state"] = Variant(menu.toggleState)
+        }
+        if (menu.iconData?.isNotEmpty() == true) properties["icon-data"] = Variant(menu.iconData)
+        return properties
     }
 
     override fun Event(id: Int, eventId: String?, data: Variant<*>?, timestamp: UInt32?) {
-        TODO("Not yet implemented")
+        if ("clicked".endsWith(eventId!!)) { //TODO this seems off
+            menuHolder.find(id)?.onEvent()
+        }
     }
 
-    override fun EventGroup(events: MutableList<EventGroupStruct>?): MutableList<Int> {
-        TODO("Not yet implemented")
-    }
-
-    override fun AboutToShow(id: Int): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override fun AboutToShowGroup(ids: MutableList<Int>?): AboutToShowGroupTuple {
-        TODO("Not yet implemented")
-    }
+    override fun EventGroup(events: MutableList<EventGroupStruct>?): MutableList<Int>? = null // not needed?
+    override fun AboutToShow(id: Int): Boolean = true // not needed?
+    override fun AboutToShowGroup(ids: MutableList<Int>?): DPair<MutableList<Int>, MutableList<Int>>? = null // not needed?
 }

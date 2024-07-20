@@ -33,7 +33,8 @@ dependencies {
     }
     extraResources(project(mapOf("path" to ":native", "configuration" to "results")))
     implementation("io.gitlab.jfronny:commons-unsafe:2.0.0-SNAPSHOT")
-    implementation("com.github.hypfvieh:dbus-java-core:5.0.0")
+//    implementation("com.github.hypfvieh:dbus-java-core:5.0.0")
+//    implementation("com.github.hypfvieh:dbus-java-transport-native-unixsocket:5.0.0")
 }
 
 val copyExtraResources by tasks.creating(Copy::class) {
@@ -66,25 +67,26 @@ abstract class InterfaceGenerateTask : DefaultTask() {
             false,
             introspectionData,
             objectPath.get(),
-            busName.get(),
-            null,
-            true
+            busName.get()
         )
         val analyze = generator.analyze(true)!!
         if (analyze.isEmpty()) throw IllegalStateException("No interfaces found")
         @OptIn(ExperimentalPathApi::class)
         output.deleteRecursively()
         output.createDirectories()
-        val regex = Regex("List<org\\.freedesktop\\.dbus\\.Struct<Integer>, ([^_\\n]+)>")
-        val memory = LinkedHashMap<String, String>()
+        val illegalStruct = Regex("List<org\\.freedesktop\\.dbus\\.Struct<Integer>, ([^_\\n]+)>")
+        val illegalTuple = Regex("public ([A-Za-z]+Tuple) ")
+        val fieldPattern = Regex("@Position\\(\\d+\\)\\r?\\n +private (.+) [a-zA-Z]+;")
+        val structMemory = LinkedHashMap<String, String>()
+        val tupleMemory = LinkedHashMap<String, String>()
         for (entry in analyze) {
-            if (entry.key.path.equals("/.java")) continue // Skip incorrectly generated file
+            if (entry.key.path.equals("/.java") || entry.key.path.endsWith("Tuple.java")) continue // Skip incorrectly generated file
             val pth = output.resolve(entry.key.path.trimStart('/'))
             pth.createParentDirs()
             // Fix the incorrect generic type
-            Files.writeString(pth, entry.value.replace(regex) { match ->
-                memory.computeIfAbsent(match.groups[1]!!.value) { type ->
-                    val name = "Struct${memory.size + 1}"
+            Files.writeString(pth, entry.value.replace(illegalStruct) { match ->
+                structMemory.computeIfAbsent(match.groups[1]!!.value) { type ->
+                    val name = "Struct${structMemory.size + 1}"
                     Files.writeString(output.resolve("com/canonical").resolve("$name.java"), """
                         package com.canonical;
                         
@@ -106,6 +108,13 @@ abstract class InterfaceGenerateTask : DefaultTask() {
                         }
                     """.trimIndent())
                     name
+                }
+            }.replace(illegalTuple) { match ->
+                tupleMemory.computeIfAbsent(match.groups[1]!!.value) { type ->
+                    val impl = analyze[analyze.keys.first { it.path.contains(type) }]!!
+                    val found = fieldPattern.findAll(impl).toList()
+                    if (found.size != 2) throw IllegalStateException("Tuple must have exactly two fields")
+                    "io.gitlab.jfronny.globalmenu.DPair<${found[0].groups[1]!!.value}, ${found[1].groups[1]!!.value}>"
                 }
             })
         }

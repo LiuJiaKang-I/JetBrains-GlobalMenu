@@ -19,11 +19,14 @@ sealed interface Peer {
     val nativePtr: Long
 }
 fun Peer(peer: Any): Peer {
-    if (X11Peer.componentPeerClass.isInstance(peer)) return X11Peer(peer)
-    if (WLPeer.componentPeerClass.isInstance(peer)) return WLPeer(peer)
+    if (peer.javaClass.name.contains("X11")) return X11Peer(peer)
+    if (peer.javaClass.name.contains("WL")) return WLPeer(peer)
     throw IllegalArgumentException("Unknown peer type: ${peer.javaClass}")
 }
 class X11Peer(private val inner: Any) : Peer {
+    init {
+        componentPeerClass.cast(inner)
+    }
     override val nativePtr: Long get() = getPtrMethod(inner)
 
     companion object {
@@ -32,6 +35,9 @@ class X11Peer(private val inner: Any) : Peer {
     }
 }
 class WLPeer(private val inner: Any) : Peer {
+    init {
+        componentPeerClass.cast(inner)
+    }
     override val nativePtr: Long get() = nativePtrField.getLong(inner)
     fun performLocked(runnable: Runnable) {
         performLockedMethod(inner, runnable)
