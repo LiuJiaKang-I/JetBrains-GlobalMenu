@@ -1,12 +1,9 @@
 package io.gitlab.jfronny.globalmenu
 
 import com.canonical.appmenu.Registrar
-import com.intellij.ide.IdeEventQueue
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.actionSystem.impl.ActionMenu
 import com.intellij.openapi.application.Application
 import com.intellij.openapi.application.ApplicationActivationListener
-import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFrame
 import com.intellij.openapi.wm.impl.IdeFrameImpl
@@ -14,16 +11,11 @@ import com.intellij.openapi.wm.impl.ProjectFrameHelper
 import com.intellij.platform.ide.menu.IdeJMenuBar
 import io.gitlab.jfronny.globalmenu.proxy.DbusmenuImpl
 import io.gitlab.jfronny.globalmenu.proxy.SwingMenuHolder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.runBlocking
 import org.freedesktop.dbus.DBusPath
 import org.freedesktop.dbus.connections.impl.DBusConnection
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder
 import org.freedesktop.dbus.types.UInt32
-import java.awt.Window
-import java.awt.event.KeyEvent
 import javax.swing.JMenuBar
-import javax.swing.SwingUtilities
 
 class GlobalMenuService(private val app: Application) : ApplicationActivationListener {
     override fun applicationActivated(ideFrame: IdeFrame) {
@@ -55,7 +47,7 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
             menu.addUpdateGlobalMenuRootsListener {
                 menuHolder.update(menu.rootMenuItems)
             }
-            menu.updateMenuActions(true)
+//            menu.updateMenuActions(true)
         }
 //        IdeEventQueue.getInstance().addDispatcher({ e ->
 //            if (e !is KeyEvent) false

@@ -17,10 +17,15 @@ class DbusmenuImpl(windowId: Long, private val menuHolder: MenuHolder) : Dbusmen
 //        object : Dbusmenu.PropertyIconThemePathType, List<String> by listOf() {}
 
     override fun GetLayout(parentId: Int, recursionDepth: Int, propertyNames: MutableList<String>?): DPair<UInt32, GetLayoutStruct> {
-        return DPair(
-            UInt32(parentId.toLong()),
-            getLayout(parentId, recursionDepth, propertyNames, menuHolder.find(parentId)!!)
-        )
+        try {
+            return DPair(
+                UInt32(parentId.toUInt().toLong()),
+                getLayout(parentId, recursionDepth, propertyNames, menuHolder.find(parentId)!!)
+            )
+        } catch (e: Exception) {
+            GlobalMenu.Log.error("Failed to get layout for menu $parentId", e)
+            throw e
+        }
     }
 
     private fun getLayout(parentId: Int, recursionDepth: Int, propertyNames: MutableList<String>?, menu: Menu): GetLayoutStruct {
@@ -80,6 +85,16 @@ class DbusmenuImpl(windowId: Long, private val menuHolder: MenuHolder) : Dbusmen
     }
 
     override fun EventGroup(events: MutableList<EventGroupStruct>?): MutableList<Int>? = null // not needed?
-    override fun AboutToShow(id: Int): Boolean = true // not needed?
+    override fun AboutToShow(id: Int): Boolean {
+        GlobalMenu.Log.warn("About to show menu $id")
+        try {
+            menuHolder.find(id)?.update()
+            return true
+        } catch (e: Exception) {
+            GlobalMenu.Log.error("Failed to update menu $id", e)
+            throw e
+        }
+
+    }
     override fun AboutToShowGroup(ids: MutableList<Int>?): DPair<MutableList<Int>, MutableList<Int>>? = null // not needed?
 }

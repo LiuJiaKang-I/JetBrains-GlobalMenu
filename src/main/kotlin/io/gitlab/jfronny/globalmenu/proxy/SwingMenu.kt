@@ -84,14 +84,11 @@ class SwingMenu(private val menuItem: JMenuItem?, private val holder: SwingMenuH
     override val children: List<Menu>? get() = _children
 
     override fun onEvent() {
-        val event = ActionEvent(menuItem, ActionEvent.ACTION_PERFORMED, menuItem!!.actionCommand)
-        ApplicationManager.getApplication().invokeLater {
-            for (it in menuItem.actionListeners) it.actionPerformed(event)
-        }
+        if (menuItem == null) return
         ApplicationManager.getApplication().invokeLater(menuItem::doClick)
-        GlobalMenu.Log.warn("Event $event for menu $id (${menuItem.javaClass})")
         when (menuItem) {
             is ActionMenuItem -> {}
+            is ActionMenu -> {}
             is JCheckBoxMenuItem -> menuItem.isSelected = !menuItem.isSelected
             is JRadioButtonMenuItem -> menuItem.isSelected = true
         }
@@ -116,7 +113,7 @@ class SwingMenu(private val menuItem: JMenuItem?, private val holder: SwingMenuH
     }
 
     fun syncChildren(deepness: Int) {
-        GlobalMenu.Log.warn("Syncing children for $label")
+//        GlobalMenu.Log.warn("Syncing children for $label")
         _children = when (menuItem) {
             is ActionMenu -> {
                 val ch = mutableListOf<Menu>()
