@@ -31,7 +31,7 @@ class DbusmenuImpl(windowId: Long, private val menuHolder: MenuHolder) : Dbusmen
             for (sm in it) {
                 children.add(Variant(getLayout(parentId, recursionDepth, propertyNames, sm)))
             }
-            if (it.isNotEmpty()) properties["children-display"] = Variant("submenu")
+            properties["children-display"] = Variant("submenu")
         }
 
         return GetLayoutStruct(menu.id, properties, children)

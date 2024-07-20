@@ -1,6 +1,10 @@
 package io.gitlab.jfronny.globalmenu.proxy
 
 import com.intellij.openapi.actionSystem.impl.ActionMenu
+import com.intellij.openapi.application.EDT
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.swing.JMenuItem
 
 class SwingRootMenu(private var menuItems: List<JMenuItem>?, private val name: String, private val holder: SwingMenuHolder): Menu {
@@ -20,7 +24,11 @@ class SwingRootMenu(private var menuItems: List<JMenuItem>?, private val name: S
     }
 
     override fun update() {
-        syncChildren()
+        runBlocking {
+            launch(Dispatchers.EDT) {
+                syncChildren()
+            }
+        }
     }
 
     fun update(items: List<ActionMenu>) {
@@ -33,6 +41,6 @@ class SwingRootMenu(private var menuItems: List<JMenuItem>?, private val name: S
     }
 
     private fun syncChildren() {
-        _children = menuItems?.map { SwingMenu(it, holder).apply { syncChildren(1) } }
+        _children = menuItems?.map { SwingMenu(it, holder).apply { syncChildren(2) } }
     }
 }

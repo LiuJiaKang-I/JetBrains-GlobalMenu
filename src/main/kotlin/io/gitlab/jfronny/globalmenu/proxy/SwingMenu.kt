@@ -88,9 +88,10 @@ class SwingMenu(private val menuItem: JMenuItem?, private val holder: SwingMenuH
         ApplicationManager.getApplication().invokeLater {
             for (it in menuItem.actionListeners) it.actionPerformed(event)
         }
-        menuItem.doClick()
+        ApplicationManager.getApplication().invokeLater(menuItem::doClick)
         GlobalMenu.Log.warn("Event $event for menu $id (${menuItem.javaClass})")
         when (menuItem) {
+            is ActionMenuItem -> {}
             is JCheckBoxMenuItem -> menuItem.isSelected = !menuItem.isSelected
             is JRadioButtonMenuItem -> menuItem.isSelected = true
         }
@@ -127,10 +128,12 @@ class SwingMenu(private val menuItem: JMenuItem?, private val holder: SwingMenuH
                     }
                     if (each !is JMenuItem) continue
                     val cmi = SwingMenu(each, holder)
-                    if (deepness > 1 && each is ActionMenu) {
-                        each.removeAll()
-                        each.isSelected = true
-                        each.fillMenu()
+                    if (deepness > 1) {
+                        if (each is ActionMenu) {
+                            each.removeAll()
+                            each.isSelected = true
+                            each.fillMenu()
+                        }
                         cmi.syncChildren(deepness - 1)
                     }
                     ch.add(cmi)
@@ -140,6 +143,10 @@ class SwingMenu(private val menuItem: JMenuItem?, private val holder: SwingMenuH
             is JMenu -> (0 until menuItem.itemCount).map { SwingMenu(menuItem.getItem(it), holder) }
             else -> null
         }
+    }
+
+    override fun toString(): String {
+        return "SwingMenu(id=$id, menuItem=$menuItem)"
     }
 
     companion object {
