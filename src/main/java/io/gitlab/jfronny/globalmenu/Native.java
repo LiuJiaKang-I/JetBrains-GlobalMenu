@@ -29,7 +29,14 @@ public class Native {
         } else {
             String _problem = null;
             try (InputStream is = Native.class.getResourceAsStream("/libnative.so")) {
-                Path path = Files.createTempFile("libnative", ".so");
+                Path path = Files.createTempFile("globalmenu-natives", ".so");
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                    try {
+                        Files.deleteIfExists(path);
+                    } catch (Throwable e) {
+                        // Ignore
+                    }
+                }));
                 Files.copy(is, path, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
                 System.load(path.toString());
             } catch (Throwable e) {
