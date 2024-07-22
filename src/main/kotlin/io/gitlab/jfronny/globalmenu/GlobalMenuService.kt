@@ -52,7 +52,6 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
         else connection?.unExportObject(DbusmenuImpl.getMenuPath(peer.nativePtr))
         if (GlobalMenu.Native.isDecorationSupported && GMSettings.getInstance().state.decorations && peer is WLPeer) {
             if (peer.decorated) {
-                // Disable client-side decorations and enable server-side decorations
                 peer.decorated = false
                 frame.size = Dimension(frame.width, frame.height + 1)
                 val decoration = GlobalMenu.Native.createDecoration(peer.nativePtr)
@@ -61,6 +60,10 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
             }
         }
         ApplicationManager.getApplication().invokeLater {
+            // applicationActivated is only called with the IDE frame.
+            // If we are a dialog (like Settings) we also need to update its properties
+            // This is where we encounter a problem: the focused window might not be set yet when applicationActivated is called
+            // Thus, we add this task to the EDT queue to be executed (hopefully) after the focused window is set
             val frame1 = FocusManager.getCurrentManager().focusedWindow
             if (frame != frame1) onActivate(frame1.peer, frame1, when (frame1) {
                 is JFrame -> frame1.jMenuBar
