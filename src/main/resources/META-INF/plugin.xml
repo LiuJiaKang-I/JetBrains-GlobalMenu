@@ -5,7 +5,7 @@
 
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>Global Menu</name>
+    <name>Global Menu and Decoration</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor email="projects.contact@frohnmeyer-wds.de" url="https://jfronny.gitlab.io">JFronny</vendor>
@@ -14,7 +14,20 @@
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-    Reenables the global menu on Linux systems.
+    Improves the user experience on Linux systems by integrating with various platform features.<br>
+    <ul>
+      <li>Global Menu: Wraps the IDE menu using dbusmenu, enabling global menus or system-wide HUDs to work</li>
+      <li>Server-Side decorations: Enables the usage of server-side window decorations on Wayland</li>
+      <li>Supports both X11 and Wayland (using the KDE appmenu protocol)</li>
+    </ul>
+    <br>
+    Notes:
+    <ul>
+      <li>This plugin is developed for x86_64 Linux systems and will not do anything elsewhere</li>
+      <li>This plugin is not dependent on KDE, even though the KDE appmenu protocol is used.<br>
+          Available features will automatically be detected.</li>
+      <li>Because it needs access to protocol-level structures, this plugin may not work as intended with modified IDEs or JVMs</li>
+    </ul>
   ]]></description>
 
     <!-- Product and plugin compatibility requirements.

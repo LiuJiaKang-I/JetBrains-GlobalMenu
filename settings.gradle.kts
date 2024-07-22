@@ -2,6 +2,12 @@ pluginManagement {
     repositories {
         mavenCentral()
         gradlePluginPortal()
+        maven("https://maven.frohnmeyer-wds.de/artifacts") {
+            content {
+                includeGroup("io.gitlab.jfronny")
+                includeGroup("jf.autoversion")
+            }
+        }
     }
 }
 

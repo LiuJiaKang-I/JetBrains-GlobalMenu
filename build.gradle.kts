@@ -1,6 +1,7 @@
 import com.jetbrains.plugin.structure.base.utils.createParentDirs
 import org.freedesktop.dbus.utils.generator.InterfaceCodeGenerator
 import org.jetbrains.intellij.platform.gradle.utils.asPath
+import io.gitlab.jfronny.scripts.*
 import java.nio.file.Files
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.createDirectories
@@ -10,6 +11,7 @@ plugins {
     java
     kotlin("jvm") version "1.9.24"
     id("org.jetbrains.intellij.platform") version "2.0.0-beta9"
+    id("jf.autoversion") version "1.6-SNAPSHOT"
 }
 
 group = "io.gitlab.jfronny"
@@ -161,6 +163,7 @@ tasks {
     patchPluginXml {
         sinceBuild.set("242")
         untilBuild.set("243.*")
+        changeNotes = changelogHtml
     }
 
     signPlugin {
