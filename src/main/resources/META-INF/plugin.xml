@@ -1,5 +1,5 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
-<idea-plugin>
+<idea-plugin require-restart="true">
     <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
     <id>io.gitlab.jfronny.globalmenu</id>
 
@@ -24,6 +24,10 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
+        <applicationConfigurable parentId="appearance" instance="io.gitlab.jfronny.globalmenu.settings.SettingsConfigurable"
+                                 id="io.gitlab.jfronny.globalmenu.settings.SettingsConfigurable"
+                                 displayName="Global Menu"/>
+        <applicationService serviceImplementation="io.gitlab.jfronny.globalmenu.settings.GMSettings"/>
     </extensions>
     <applicationListeners>
         <listener class="io.gitlab.jfronny.globalmenu.GlobalMenuService" topic="com.intellij.openapi.application.ApplicationActivationListener"/>

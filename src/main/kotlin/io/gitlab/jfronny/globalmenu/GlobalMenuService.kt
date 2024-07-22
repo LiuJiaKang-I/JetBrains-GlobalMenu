@@ -11,6 +11,7 @@ import com.intellij.openapi.wm.impl.ProjectFrameHelper
 import com.intellij.platform.ide.menu.IdeJMenuBar
 import io.gitlab.jfronny.globalmenu.proxy.DbusmenuImpl
 import io.gitlab.jfronny.globalmenu.proxy.SwingMenuHolder
+import io.gitlab.jfronny.globalmenu.settings.GMSettings
 import org.freedesktop.dbus.DBusPath
 import org.freedesktop.dbus.connections.impl.DBusConnection
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder
@@ -21,6 +22,7 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
     override fun applicationActivated(ideFrame: IdeFrame) {
         super.applicationActivated(ideFrame)
         if (!GlobalMenu.Native.isSupported) return
+        if (!GMSettings.getInstance().state.menu) return
         if (ideFrame is ProjectFrameHelper) {
             visualize(ideFrame.rootPane.jMenuBar, ideFrame.rootPane.peer)
         } else if (ideFrame is IdeFrameImpl) {
