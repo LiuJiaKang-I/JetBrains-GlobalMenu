@@ -42,6 +42,6 @@ class SwingRootMenu(private var menuItems: List<JMenuItem>?, private val name: S
     }
 
     private fun syncChildren() {
-        _children = menuItems?.map { SwingMenu(it, holder).apply { syncChildren(1) } } // setting this to 2 may help prevent missing entries but is SLLOOOOWWW
+        _children = menuItems?.map { SwingMenu(it, holder).apply { syncChildren(2) } } // setting this to 2 may help prevent missing entries but is SLLOOOOWWW
     }
 }
