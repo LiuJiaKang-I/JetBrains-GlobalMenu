@@ -27,15 +27,17 @@ public class Native {
         } else if (System.getProperty("io.gitlab.jfronny.globalmenu.disable") != null) {
             problem = "Explicitly disabled";
         } else {
+            String _problem = null;
             try (InputStream is = Native.class.getResourceAsStream("/libnative.so")) {
                 Path path = Files.createTempFile("libnative", ".so");
                 Files.copy(is, path, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
                 System.load(path.toString());
-            } catch (Exception e) {
-                problem = "Failed to load native library: " + e.getMessage();
-                throw new RuntimeException(e);
+            } catch (Throwable e) {
+                _problem = "Failed to load native library: " + e.getMessage();
+                // We can't log yet, because Idea will complain
+//                GlobalMenu.INSTANCE.getLog().error("Failed to load native library", e);
             }
-            problem = null;
+            problem = _problem;
         }
     }
 
