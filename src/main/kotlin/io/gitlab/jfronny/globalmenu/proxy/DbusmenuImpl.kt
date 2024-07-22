@@ -72,7 +72,7 @@ class DbusmenuImpl(windowId: Long, private val menuHolder: MenuHolder) : Dbusmen
     }
 
     override fun Event(id: Int, eventId: String, data: Variant<*>?, timestamp: UInt32?) {
-        GlobalMenu.Log.warn("Event $eventId for menu $id (${menuHolder.find(id)})")
+        if (GlobalMenu.debugging) GlobalMenu.Log.warn("Event $eventId for menu $id (${menuHolder.find(id)})")
         try {
             when (eventId) {
                 "clicked" -> menuHolder.find(id)?.onEvent()
@@ -86,7 +86,7 @@ class DbusmenuImpl(windowId: Long, private val menuHolder: MenuHolder) : Dbusmen
 
     override fun EventGroup(events: MutableList<EventGroupStruct>?): MutableList<Int>? = null // not needed?
     override fun AboutToShow(id: Int): Boolean {
-        GlobalMenu.Log.warn("About to show menu $id")
+        if (GlobalMenu.debugging) GlobalMenu.Log.warn("About to show menu $id")
         try {
             menuHolder.find(id)?.update()
             return true

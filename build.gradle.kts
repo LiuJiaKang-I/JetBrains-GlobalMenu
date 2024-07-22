@@ -144,7 +144,9 @@ tasks {
     }
 
     buildSearchableOptions {
-        jvmArgs("-Dio.gitlab.jfronny.globalmenu.disable")
+        jvmArgs(
+            "-Dio.gitlab.jfronny.globalmenu.disable"
+        )
     }
 
     // Set the JVM compatibility versions
@@ -172,6 +174,9 @@ tasks {
     }
 
     runIde {
-        this.jvmArgs("-Dawt.toolkit.name=WLToolkit")
+        jvmArgs(
+            "-Dawt.toolkit.name=WLToolkit",
+//            "-Dio.gitlab.jfronny.globalmenu.debug"
+        )
     }
 }

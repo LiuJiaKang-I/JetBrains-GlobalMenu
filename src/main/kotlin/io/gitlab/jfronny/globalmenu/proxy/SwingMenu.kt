@@ -5,20 +5,17 @@ import com.intellij.openapi.actionSystem.impl.ActionMenuItem
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.EDT
 import io.gitlab.jfronny.globalmenu.GlobalMenu
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.apache.commons.io.output.ByteArrayOutputStream
-import java.awt.event.ActionEvent
 import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
 import java.awt.image.BufferedImage
 import java.lang.reflect.Modifier
 import java.util.*
 import javax.imageio.ImageIO
-import javax.swing.JCheckBoxMenuItem
-import javax.swing.JMenu
-import javax.swing.JMenuItem
-import javax.swing.JRadioButtonMenuItem
-import javax.swing.JSeparator
+import javax.swing.*
 
 class SwingMenu(private val menuItem: JMenuItem?, private val holder: SwingMenuHolder) : Menu {
     override val id = holder.getId(menuItem)
@@ -26,7 +23,9 @@ class SwingMenu(private val menuItem: JMenuItem?, private val holder: SwingMenuH
     override val label: String get() = menuItem?.text ?: ""
     override val isEnabled: Boolean get() = menuItem?.isEnabled ?: false
     override val isVisible: Boolean get() = menuItem?.isVisible ?: false
-    override val iconData: ByteArray? get() = menuItem?.icon?.let { icon ->
+    override val iconData: ByteArray? by lazy { menuItem?.icon?.let { icon ->
+        // This is somewhat expensive, but we need to do it
+        // At least avoid doing it multiple times
         val width = icon.iconWidth
         val height = icon.iconHeight
 
@@ -46,7 +45,7 @@ class SwingMenu(private val menuItem: JMenuItem?, private val holder: SwingMenuH
             GlobalMenu.Log.error("Failed to convert icon to byte array", e)
             null
         }
-    }
+    } }
 
     override val shortcut: Array<String>? get() = menuItem?.accelerator?.let { ks ->
         val s = getModifiersText(ks.modifiers)
@@ -129,7 +128,7 @@ class SwingMenu(private val menuItem: JMenuItem?, private val holder: SwingMenuH
                         if (each is ActionMenu) {
                             each.removeAll()
                             each.isSelected = true
-                            each.fillMenu()
+                            each.fillMenu() // This is REALLY expensive and on the EDT TODO: find out whether we can avoid it
                         }
                         cmi.syncChildren(deepness - 1)
                     }
