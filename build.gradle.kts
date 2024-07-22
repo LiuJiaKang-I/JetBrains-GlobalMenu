@@ -143,6 +143,10 @@ tasks {
         dependsOn(generateDbus, generateDbusRegistrar)
     }
 
+    buildSearchableOptions {
+        jvmArgs("-Dio.gitlab.jfronny.globalmenu.disable")
+    }
+
     // Set the JVM compatibility versions
     withType<JavaCompile> {
         sourceCompatibility = "21"

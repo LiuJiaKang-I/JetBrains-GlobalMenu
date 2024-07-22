@@ -67,12 +67,31 @@ tasks {
         outputFile = layout.buildDirectory.file("generated/wayland/appmenu.c")
         commandLine("wayland-scanner", "private-code", inputFile.asFile.get().absolutePath, outputFile.asFile.get().absolutePath)
     }
+    // shell glue is needed for a symbol used in xdg-decoration-unstable-v1
+    val generateShellGlue by registering(RunToolTask::class) {
+        group = "custom"
+        inputFile = file("src/main/protocols/xdg-shell.xml")
+        outputFile = layout.buildDirectory.file("generated/wayland/xdg-shell.c")
+        commandLine("wayland-scanner", "private-code", inputFile.asFile.get().absolutePath, outputFile.asFile.get().absolutePath)
+    }
+    val generateDecorationHeader by registering(RunToolTask::class) {
+        group = "custom"
+        inputFile = file("src/main/protocols/xdg-decoration-unstable-v1.xml")
+        outputFile = layout.buildDirectory.file("generated/wayland/xdg-decoration-unstable-v1.h")
+        commandLine("wayland-scanner", "client-header", inputFile.asFile.get().absolutePath, outputFile.asFile.get().absolutePath)
+    }
+    val generateDecorationGlue by registering(RunToolTask::class) {
+        group = "custom"
+        inputFile = file("src/main/protocols/xdg-decoration-unstable-v1.xml")
+        outputFile = layout.buildDirectory.file("generated/wayland/xdg-decoration-unstable-v1.c")
+        commandLine("wayland-scanner", "private-code", inputFile.asFile.get().absolutePath, outputFile.asFile.get().absolutePath)
+    }
     afterEvaluate {
         named("compileDebugCpp") {
-            dependsOn(generateAppmenuHeader, generateAppmenuGlue)
+            dependsOn(generateAppmenuHeader, generateAppmenuGlue, generateShellGlue, generateDecorationHeader, generateDecorationGlue)
         }
         named("compileReleaseCpp") {
-            dependsOn(generateAppmenuHeader, generateAppmenuGlue)
+            dependsOn(generateAppmenuHeader, generateAppmenuGlue, generateShellGlue, generateDecorationHeader, generateDecorationGlue)
         }
     }
 }
