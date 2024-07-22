@@ -15,7 +15,6 @@ struct WLFrame {
     void *pad5;
     void *pad6;
     void *pad7;
-    void *pad8;
     jboolean toplevel;
     union {
         struct xdg_toplevel *xdg_toplevel;
@@ -99,6 +98,10 @@ JNIEXPORT jlong JNICALL Java_io_gitlab_jfronny_globalmenu_Native_createDecoratio
     struct WLFrame *frame = (struct WLFrame *) ptr;
     if (!frame->toplevel) {
         (*env)->ThrowNew(env, (*env)->FindClass(env, "java/lang/RuntimeException"), "Not a toplevel");
+        return 0;
+    }
+    if (frame->xdg_toplevel == NULL) {
+        (*env)->ThrowNew(env, (*env)->FindClass(env, "java/lang/RuntimeException"), "No xdg_toplevel extracted");
         return 0;
     }
     return (jlong) (intptr_t) zxdg_decoration_manager_v1_get_toplevel_decoration(zxdg_decoration_manager_v1, frame->xdg_toplevel);

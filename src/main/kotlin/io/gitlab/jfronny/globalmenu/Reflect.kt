@@ -3,6 +3,7 @@ package io.gitlab.jfronny.globalmenu
 import io.gitlab.jfronny.commons.unsafe.reflect.Reflect
 import io.gitlab.jfronny.commons.unsafe.reflect.impl.CoreReflect
 import java.awt.Component
+import java.awt.Insets
 import java.lang.reflect.AccessibleObject
 import java.lang.reflect.Field
 
@@ -42,14 +43,25 @@ class WLPeer(private val inner: Any) : Peer {
     fun performLocked(runnable: Runnable) {
         performLockedMethod(inner, runnable)
     }
-    fun registerCleaner(runnable: Runnable) {
-        GlobalMenu.Cleaner.register(this, runnable)
-    }
+    var decorated: Boolean
+        get() = containerPeerClass.isInstance(inner) && getInsetsMethod(inner).top > 0
+        set(value) {
+            val decoration = decorationField.get(inner)
+            isUndecoratedField.setBoolean(decoration, !value)
+            markRepaintNeededMethod(decoration)
+        }
 
     companion object {
         val componentPeerClass = Class.forName("sun.awt.wl.WLComponentPeer")
         private val performLockedMethod = Reflect.instanceProcedure(componentPeerClass, "performLocked", Runnable::class.java).unchecked1
         private val nativePtrField = componentPeerClass.getDeclaredField("nativePtr").apply { setAccessible(this) }
+        private val containerPeerClass = Class.forName("java.awt.peer.ContainerPeer")
+        private val getInsetsMethod = Reflect.instanceFunction(containerPeerClass, "getInsets", Insets::class.java).unchecked
+        private val decoratedPeerClass = Class.forName("sun.awt.wl.WLDecoratedPeer")
+        private val decorationField = decoratedPeerClass.getDeclaredField("decoration").apply { setAccessible(this) }
+        private val frameDecorationClass = Class.forName("sun.awt.wl.WLFrameDecoration")
+        private val markRepaintNeededMethod = Reflect.instanceProcedure(frameDecorationClass, "markRepaintNeeded").unchecked
+        private val isUndecoratedField = frameDecorationClass.getDeclaredField("isUndecorated").apply { setAccessible(this) }
     }
 }
 

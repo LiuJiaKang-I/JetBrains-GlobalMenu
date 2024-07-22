@@ -4,6 +4,7 @@ import com.canonical.appmenu.Registrar
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.Application
 import com.intellij.openapi.application.ApplicationActivationListener
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFrame
 import com.intellij.openapi.wm.impl.IdeFrameImpl
@@ -16,6 +17,10 @@ import org.freedesktop.dbus.DBusPath
 import org.freedesktop.dbus.connections.impl.DBusConnection
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder
 import org.freedesktop.dbus.types.UInt32
+import java.awt.Dimension
+import java.awt.Window
+import javax.swing.FocusManager
+import javax.swing.JFrame
 import javax.swing.JMenuBar
 
 class GlobalMenuService(private val app: Application) : ApplicationActivationListener {
@@ -23,22 +28,44 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
         super.applicationActivated(ideFrame)
         if (!GlobalMenu.Native.isSupported) return
         val peer: Peer
-        val menuBar: JMenuBar
+        val menuBar: JMenuBar?
+        val frame: JFrame
+        GlobalMenu.Log.warn(ideFrame.toString())
         when (ideFrame) {
             is ProjectFrameHelper -> {
                 peer = ideFrame.rootPane.peer
                 menuBar = ideFrame.rootPane.jMenuBar
+                frame = ideFrame.frame
             }
             is IdeFrameImpl -> {
                 peer = ideFrame.peer
                 menuBar = ideFrame.jMenuBar
+                frame = ideFrame
             }
             else -> return
         }
-        if (GlobalMenu.Native.isMenuSupported && GMSettings.getInstance().state.menu) addGlobalMenu(menuBar, peer)
-        else connection?.unExportObject(DbusmenuImpl.getMenuPath(peer.nativePtr))
-        if (GlobalMenu.Native.isDecorationSupported && GMSettings.getInstance().state.decorations) {
+        onActivate(peer, frame, menuBar)
+    }
 
+    private fun onActivate(peer: Peer, frame: Window, menuBar: JMenuBar?) {
+        if (GlobalMenu.Native.isMenuSupported && GMSettings.getInstance().state.menu && menuBar != null) addGlobalMenu(menuBar, peer)
+        else connection?.unExportObject(DbusmenuImpl.getMenuPath(peer.nativePtr))
+        if (GlobalMenu.Native.isDecorationSupported && GMSettings.getInstance().state.decorations && peer is WLPeer) {
+            if (peer.decorated) {
+                // Disable client-side decorations and enable server-side decorations
+                peer.decorated = false
+                frame.size = Dimension(frame.width, frame.height + 1)
+                val decoration = GlobalMenu.Native.createDecoration(peer.nativePtr)
+//                Disposer.register(lastMenu!!) { GlobalMenu.Native.destroyDecoration(decoration)
+                GlobalMenu.Native.setDecoration(decoration, 2)
+            }
+        }
+        ApplicationManager.getApplication().invokeLater {
+            val frame1 = FocusManager.getCurrentManager().focusedWindow
+            if (frame != frame1) onActivate(frame1.peer, frame1, when (frame1) {
+                is JFrame -> frame1.jMenuBar
+                else -> null
+            })
         }
     }
 
