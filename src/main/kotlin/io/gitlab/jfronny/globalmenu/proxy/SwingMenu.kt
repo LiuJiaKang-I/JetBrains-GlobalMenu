@@ -17,7 +17,7 @@ import java.util.*
 import javax.imageio.ImageIO
 import javax.swing.*
 
-class SwingMenu(private val menuItem: JMenuItem?, private val holder: SwingMenuHolder) : Menu {
+class SwingMenu(private val menuItem: JMenuItem?, private val holder: SwingMenuHolder) : Menu.Abstract() {
     override val id = holder.getId(menuItem)
     override val isSeparator: Boolean get() = menuItem == null
     override val label: String get() = menuItem?.text ?: ""
@@ -94,6 +94,7 @@ class SwingMenu(private val menuItem: JMenuItem?, private val holder: SwingMenuH
     }
 
     override fun update() {
+        super.update()
         try {
             if (menuItem is ActionMenu) {
                 runBlocking {

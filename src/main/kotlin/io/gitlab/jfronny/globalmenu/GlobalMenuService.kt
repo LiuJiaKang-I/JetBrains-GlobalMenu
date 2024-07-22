@@ -30,7 +30,6 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
         val peer: Peer
         val menuBar: JMenuBar?
         val frame: JFrame
-        GlobalMenu.Log.warn(ideFrame.toString())
         when (ideFrame) {
             is ProjectFrameHelper -> {
                 peer = ideFrame.rootPane.peer

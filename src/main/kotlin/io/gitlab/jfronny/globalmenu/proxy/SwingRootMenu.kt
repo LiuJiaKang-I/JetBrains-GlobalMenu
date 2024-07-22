@@ -7,7 +7,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.swing.JMenuItem
 
-class SwingRootMenu(private var menuItems: List<JMenuItem>?, private val name: String, private val holder: SwingMenuHolder): Menu {
+class SwingRootMenu(private var menuItems: List<JMenuItem>?, private val name: String, private val holder: SwingMenuHolder): Menu.Abstract() {
     override val id: Int get() = 0
     override val isSeparator: Boolean get() = menuItems == null
     override val label: String get() = name
@@ -24,6 +24,7 @@ class SwingRootMenu(private var menuItems: List<JMenuItem>?, private val name: S
     }
 
     override fun update() {
+        super.update()
         runBlocking {
             launch(Dispatchers.EDT) {
                 syncChildren()
@@ -41,6 +42,6 @@ class SwingRootMenu(private var menuItems: List<JMenuItem>?, private val name: S
     }
 
     private fun syncChildren() {
-        _children = menuItems?.map { SwingMenu(it, holder).apply { syncChildren(2) } }
+        _children = menuItems?.map { SwingMenu(it, holder).apply { syncChildren(1) } } // setting this to 2 may help prevent missing entries but is SLLOOOOWWW
     }
 }

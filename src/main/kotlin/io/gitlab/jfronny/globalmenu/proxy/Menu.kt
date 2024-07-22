@@ -13,4 +13,18 @@ interface Menu {
     val children: List<Menu>?
     fun onEvent()
     fun update()
+    fun maybeUpdate()
+
+    abstract class Abstract : Menu {
+        private var lastUpdated = 0L
+        override fun maybeUpdate() {
+            if (System.currentTimeMillis() - lastUpdated > 1000) {
+                update()
+            }
+        }
+
+        override fun update() {
+            lastUpdated = System.currentTimeMillis()
+        }
+    }
 }

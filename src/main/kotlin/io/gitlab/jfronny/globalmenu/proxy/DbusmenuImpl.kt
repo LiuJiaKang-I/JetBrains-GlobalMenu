@@ -76,7 +76,7 @@ class DbusmenuImpl(windowId: Long, private val menuHolder: MenuHolder) : Dbusmen
         try {
             when (eventId) {
                 "clicked" -> menuHolder.find(id)?.onEvent()
-                "opened" -> menuHolder.find(id)?.update()
+                "opened" -> menuHolder.find(id)?.maybeUpdate()
             }
         } catch (e: Exception) {
             GlobalMenu.Log.error("Failed to handle event $eventId for menu $id", e)
@@ -88,7 +88,7 @@ class DbusmenuImpl(windowId: Long, private val menuHolder: MenuHolder) : Dbusmen
     override fun AboutToShow(id: Int): Boolean {
         if (GlobalMenu.debugging) GlobalMenu.Log.warn("About to show menu $id")
         try {
-            menuHolder.find(id)?.update()
+            menuHolder.find(id)?.maybeUpdate()
             return true
         } catch (e: Exception) {
             GlobalMenu.Log.error("Failed to update menu $id", e)
