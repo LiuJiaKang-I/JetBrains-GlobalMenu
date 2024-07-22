@@ -35,9 +35,9 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
             }
             else -> return
         }
-        if (GMSettings.getInstance().state.menu) addGlobalMenu(menuBar, peer)
+        if (GlobalMenu.Native.isMenuSupported && GMSettings.getInstance().state.menu) addGlobalMenu(menuBar, peer)
         else connection?.unExportObject(DbusmenuImpl.getMenuPath(peer.nativePtr))
-        if (GMSettings.getInstance().state.decorations) {
+        if (GlobalMenu.Native.isDecorationSupported && GMSettings.getInstance().state.decorations) {
 
         }
     }
@@ -86,7 +86,9 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
         if (peer is WLPeer) {
             peer.performLocked {
                 val ptr = GlobalMenu.Native.createMenu(windowPtr)
-                Disposer.register(lastMenu!!) { GlobalMenu.Native.destroyMenu(ptr) }
+                // this segfaults for some reason
+                // Yew, we leak memory on every activation without this, but unless the crash is fixed, that is the better option
+//                Disposer.register(lastMenu!!) { GlobalMenu.Native.destroyMenu(ptr) }
                 GlobalMenu.Native.setMenuAddress(ptr, conn.uniqueName, objectPath)
             }
         } else {

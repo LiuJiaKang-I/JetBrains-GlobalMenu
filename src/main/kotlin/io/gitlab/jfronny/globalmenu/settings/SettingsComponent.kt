@@ -30,6 +30,16 @@ class SettingsComponent {
                     }
                     label("The plugin should work as expected")
                 }
+                if (!GlobalMenu.Native.isMenuSupported) {
+                    row {
+                        label("Global menu is not supported on this compositor")
+                    }
+                }
+                if (!GlobalMenu.Native.isDecorationSupported) {
+                    row {
+                        label("Server-side decorations are not supported on this compositor")
+                    }
+                }
             }
             row {
                 menu = checkBox("Enable global menu").apply {

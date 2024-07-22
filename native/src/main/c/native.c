@@ -59,6 +59,10 @@ JNIEXPORT void JNICALL Java_io_gitlab_jfronny_globalmenu_Native_init(JNIEnv *env
     }
 }
 
+JNIEXPORT jboolean JNICALL Java_io_gitlab_jfronny_globalmenu_Native_isMenuSupported(JNIEnv *env, jobject obj) {
+    return org_kde_kwin_appmenu_manager != NULL;
+}
+
 JNIEXPORT jlong JNICALL Java_io_gitlab_jfronny_globalmenu_Native_createMenu(JNIEnv *env, jobject obj, jlong ptr) {
     if (org_kde_kwin_appmenu_manager == NULL) {
         (*env)->ThrowNew(env, (*env)->FindClass(env, "java/lang/RuntimeException"), "Appmenu manager not initialized");
@@ -81,6 +85,10 @@ JNIEXPORT void JNICALL Java_io_gitlab_jfronny_globalmenu_Native_setMenuAddress(J
     org_kde_kwin_appmenu_set_address(frame, service_name, object_path);
     (*env)->ReleaseStringUTFChars(env, serviceName, service_name);
     (*env)->ReleaseStringUTFChars(env, objectPath, object_path);
+}
+
+JNIEXPORT jboolean JNICALL Java_io_gitlab_jfronny_globalmenu_Native_isDecorationSupported(JNIEnv *env, jobject obj) {
+    return zxdg_decoration_manager_v1 != NULL;
 }
 
 JNIEXPORT jlong JNICALL Java_io_gitlab_jfronny_globalmenu_Native_createDecoration(JNIEnv *env, jobject obj, jlong ptr) {

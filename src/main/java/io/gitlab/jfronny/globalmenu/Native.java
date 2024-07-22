@@ -8,10 +8,12 @@ import java.util.Optional;
 public class Native {
     public native void init(long displayPtr);
 
+    public native boolean isMenuSupported();
     public native long createMenu(long ptr);
     public native void destroyMenu(long ptr);
     public native void setMenuAddress(long ptr, String serviceName, String objectPath);
 
+    public native boolean isDecorationSupported();
     public native long createDecoration(long ptr);
     public native void destroyDecoration(long ptr);
     public native void setDecoration(long ptr, int mode); // 0 = no preference, 1 = client side, 2 = server side
