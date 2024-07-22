@@ -7,7 +7,7 @@ import org.freedesktop.dbus.types.UInt32
 import org.freedesktop.dbus.types.Variant
 
 class DbusmenuImpl(windowId: Long, private val menuHolder: MenuHolder) : Dbusmenu {
-    private val menuPath: String = "/com/canonical/menu0x${windowId.toString(16)}"
+    private val menuPath: String = getMenuPath(windowId)
     override fun getObjectPath(): String = menuPath
 //    override fun getVersion(): UInt32 = UInt32(3)
 //    override fun getTextDirection(): String = "none"
@@ -97,4 +97,8 @@ class DbusmenuImpl(windowId: Long, private val menuHolder: MenuHolder) : Dbusmen
 
     }
     override fun AboutToShowGroup(ids: MutableList<Int>?): DPair<MutableList<Int>, MutableList<Int>>? = null // not needed?
+
+    companion object {
+        fun getMenuPath(windowId: Long): String = "/com/canonical/menu0x${windowId.toString(16)}"
+    }
 }

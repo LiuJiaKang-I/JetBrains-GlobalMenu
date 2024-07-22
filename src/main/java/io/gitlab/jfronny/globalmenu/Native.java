@@ -7,9 +7,14 @@ import java.util.Optional;
 
 public class Native {
     public native void init(long displayPtr);
-    public native long create(long ptr);
-    public native void destroy(long ptr);
-    public native void setAddress(long ptr, String serviceName, String objectPath);
+
+    public native long createMenu(long ptr);
+    public native void destroyMenu(long ptr);
+    public native void setMenuAddress(long ptr, String serviceName, String objectPath);
+
+    public native long createDecoration(long ptr);
+    public native void destroyDecoration(long ptr);
+    public native void setDecoration(long ptr, int mode); // 0 = no preference, 1 = client side, 2 = server side
 
     private static final String problem;
     static {
@@ -17,6 +22,8 @@ public class Native {
             problem = "Not running on Linux";
         } else if (!System.getProperty("os.arch").equals("amd64")) {
             problem = "Not running on amd64";
+        } else if (System.getProperty("io.gitlab.jfronny.globalmenu.disable") != null) {
+            problem = "Explicitly disabled";
         } else {
             try (InputStream is = Native.class.getResourceAsStream("/libnative.so")) {
                 Path path = Files.createTempFile("libnative", ".so");

@@ -22,11 +22,23 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
     override fun applicationActivated(ideFrame: IdeFrame) {
         super.applicationActivated(ideFrame)
         if (!GlobalMenu.Native.isSupported) return
-        if (!GMSettings.getInstance().state.menu) return
-        if (ideFrame is ProjectFrameHelper) {
-            visualize(ideFrame.rootPane.jMenuBar, ideFrame.rootPane.peer)
-        } else if (ideFrame is IdeFrameImpl) {
-            visualize(ideFrame.jMenuBar, ideFrame.peer)
+        val peer: Peer
+        val menuBar: JMenuBar
+        when (ideFrame) {
+            is ProjectFrameHelper -> {
+                peer = ideFrame.rootPane.peer
+                menuBar = ideFrame.rootPane.jMenuBar
+            }
+            is IdeFrameImpl -> {
+                peer = ideFrame.peer
+                menuBar = ideFrame.jMenuBar
+            }
+            else -> return
+        }
+        if (GMSettings.getInstance().state.menu) addGlobalMenu(menuBar, peer)
+        else connection?.unExportObject(DbusmenuImpl.getMenuPath(peer.nativePtr))
+        if (GMSettings.getInstance().state.decorations) {
+
         }
     }
 
@@ -37,7 +49,7 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
     private var lastMenu: Disposable? = null
     private var connection: DBusConnection? = null
 
-    fun visualize(menu: JMenuBar, peer: Peer) = app.invokeLater {
+    private fun addGlobalMenu(menu: JMenuBar, peer: Peer) = app.invokeLater {
         lastMenu?.let { Disposer.dispose(it) }
         lastMenu = Disposer.newDisposable()
 
@@ -51,6 +63,7 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
             }
 //            menu.updateMenuActions(true)
         }
+        //TODO handle keybindings
 //        IdeEventQueue.getInstance().addDispatcher({ e ->
 //            if (e !is KeyEvent) false
 //            else if (!e.isAltDown) false
@@ -66,17 +79,20 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
 
         val windowPtr = peer.nativePtr
         val menu = DbusmenuImpl(windowPtr, menuHolder)
-        conn.unExportObject(menu.objectPath)
+        val objectPath = menu.objectPath
         conn.exportObject(menu)
+        Disposer.register(lastMenu!!) { conn.unExportObject(objectPath) }
 
         if (peer is WLPeer) {
             peer.performLocked {
-                val ptr = GlobalMenu.Native.create(windowPtr)
-                GlobalMenu.Native.setAddress(ptr, conn.uniqueName, menu.objectPath)
+                val ptr = GlobalMenu.Native.createMenu(windowPtr)
+                Disposer.register(lastMenu!!) { GlobalMenu.Native.destroyMenu(ptr) }
+                GlobalMenu.Native.setMenuAddress(ptr, conn.uniqueName, objectPath)
             }
         } else {
             val registrar = conn.getRemoteObject("org.canonical.AppMenu.Registrar", "/com/canonical/AppMenu/Registrar", Registrar::class.java)
-            registrar.RegisterWindow(UInt32(windowPtr), DBusPath(menu.objectPath))
+            registrar.RegisterWindow(UInt32(windowPtr), DBusPath(objectPath))
+            Disposer.register(lastMenu!!) { registrar.UnregisterWindow(UInt32(windowPtr)) }
         }
     }
 }

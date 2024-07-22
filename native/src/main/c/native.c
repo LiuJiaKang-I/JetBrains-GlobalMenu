@@ -13,7 +13,7 @@ struct WLFrame {
 struct org_kde_kwin_appmenu_manager *org_kde_kwin_appmenu_manager = NULL;
 
 static void registry_global(void *data, struct wl_registry *registry, uint32_t name, const char *interface, uint32_t version) {
-    if (strcmp(interface, "org_kde_kwin_appmenu_manager") == 0) {
+    if (strcmp(interface, org_kde_kwin_appmenu_manager_interface.name) == 0) {
         org_kde_kwin_appmenu_manager = wl_registry_bind(registry, name, &org_kde_kwin_appmenu_manager_interface, 1);
     }
 }
@@ -42,7 +42,7 @@ JNIEXPORT void JNICALL Java_io_gitlab_jfronny_globalmenu_Native_init(JNIEnv *env
     }
 }
 
-JNIEXPORT jlong JNICALL Java_io_gitlab_jfronny_globalmenu_Native_create(JNIEnv *env, jobject obj, jlong ptr) {
+JNIEXPORT jlong JNICALL Java_io_gitlab_jfronny_globalmenu_Native_createMenu(JNIEnv *env, jobject obj, jlong ptr) {
     if (org_kde_kwin_appmenu_manager == NULL) {
         (*env)->ThrowNew(env, (*env)->FindClass(env, "java/lang/RuntimeException"), "Appmenu manager not initialized");
         return 0;
@@ -51,13 +51,13 @@ JNIEXPORT jlong JNICALL Java_io_gitlab_jfronny_globalmenu_Native_create(JNIEnv *
     return (jlong) (intptr_t) org_kde_kwin_appmenu_manager_create(org_kde_kwin_appmenu_manager, frame->wl_surface);
 }
 
-JNIEXPORT void JNICALL Java_io_gitlab_jfronny_globalmenu_Native_destroy(JNIEnv *env, jobject obj, jlong ptr) {
+JNIEXPORT void JNICALL Java_io_gitlab_jfronny_globalmenu_Native_destroyMenu(JNIEnv *env, jobject obj, jlong ptr) {
     struct org_kde_kwin_appmenu *frame = (struct org_kde_kwin_appmenu *) ptr;
     org_kde_kwin_appmenu_release(frame);
     org_kde_kwin_appmenu_destroy(frame);
 }
 
-JNIEXPORT void JNICALL Java_io_gitlab_jfronny_globalmenu_Native_setAddress(JNIEnv *env, jobject obj, jlong ptr, jstring serviceName, jstring objectPath) {
+JNIEXPORT void JNICALL Java_io_gitlab_jfronny_globalmenu_Native_setMenuAddress(JNIEnv *env, jobject obj, jlong ptr, jstring serviceName, jstring objectPath) {
     struct org_kde_kwin_appmenu *frame = (struct org_kde_kwin_appmenu *) ptr;
     char *service_name = (*env)->GetStringUTFChars(env, serviceName, NULL);
     char *object_path = (*env)->GetStringUTFChars(env, objectPath, NULL);
