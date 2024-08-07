@@ -10,7 +10,7 @@ import kotlin.io.path.deleteRecursively
 plugins {
     java
     kotlin("jvm") version "1.9.24"
-    id("org.jetbrains.intellij.platform") version "2.0.0-beta9"
+    id("org.jetbrains.intellij.platform") version "2.0.0"
     id("jf.autoversion") version "1.6-SNAPSHOT"
 }
 
@@ -30,7 +30,7 @@ val extraResources by configurations.creating
 
 dependencies {
     intellijPlatform {
-        intellijIdeaCommunity("242.20224.91")
+        intellijIdeaCommunity("2024.2")
         instrumentationTools()
     }
     extraResources(project(mapOf("path" to ":native", "configuration" to "results")))
