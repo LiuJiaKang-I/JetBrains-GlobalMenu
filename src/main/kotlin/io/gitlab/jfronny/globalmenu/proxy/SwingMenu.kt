@@ -13,7 +13,6 @@ import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
 import java.awt.image.BufferedImage
 import java.lang.reflect.Modifier
-import java.util.*
 import javax.imageio.ImageIO
 import javax.swing.*
 
@@ -48,24 +47,23 @@ class SwingMenu(private val menuItem: JMenuItem?, private val holder: SwingMenuH
     } }
 
     override val shortcut: Array<String>? get() = menuItem?.accelerator?.let { ks ->
-        val s = getModifiersText(ks.modifiers)
+        val s = getModifiers(ks.modifiers)
         val vk = keyEvents[ks.keyCode] ?: "UNKNOWN"
         val l = mutableListOf<String>()
-        val st = StringTokenizer(s)
-        while (st.hasMoreTokens()) l.add(st.nextToken())
+        l.addAll(s)
         l.add(vk)
         l.toTypedArray()
     }
 
-    private fun getModifiersText(modifiers: Int): String = buildString {
-        if (modifiers and InputEvent.SHIFT_DOWN_MASK != 0) append("Shift ")
-        if (modifiers and InputEvent.CTRL_DOWN_MASK != 0) append("Ctrl ")
-        if (modifiers and InputEvent.META_DOWN_MASK != 0) append("Meta ")
-        if (modifiers and InputEvent.ALT_DOWN_MASK != 0) append("Alt ")
-        if (modifiers and InputEvent.ALT_GRAPH_DOWN_MASK != 0) append("AltGraph ")
-        if (modifiers and InputEvent.BUTTON1_DOWN_MASK != 0) append("Button1 ")
-        if (modifiers and InputEvent.BUTTON2_DOWN_MASK != 0) append("Button2 ")
-        if (modifiers and InputEvent.BUTTON3_DOWN_MASK != 0) append("Button3 ")
+    private fun getModifiers(modifiers: Int): List<String> = buildList {
+        if (modifiers and InputEvent.SHIFT_DOWN_MASK != 0) add("Shift")
+        if (modifiers and InputEvent.CTRL_DOWN_MASK != 0) add("Ctrl")
+        if (modifiers and InputEvent.META_DOWN_MASK != 0) add("Meta")
+        if (modifiers and InputEvent.ALT_DOWN_MASK != 0) add("Alt")
+        if (modifiers and InputEvent.ALT_GRAPH_DOWN_MASK != 0) add("AltGraph")
+        if (modifiers and InputEvent.BUTTON1_DOWN_MASK != 0) add("Button1")
+        if (modifiers and InputEvent.BUTTON2_DOWN_MASK != 0) add("Button2")
+        if (modifiers and InputEvent.BUTTON3_DOWN_MASK != 0) add("Button3")
     }
 
     override val toggleType: String? get() = when (menuItem) {

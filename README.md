@@ -1,5 +1,4 @@
 # TODO
-- keybind information
 - separators
 
 # References

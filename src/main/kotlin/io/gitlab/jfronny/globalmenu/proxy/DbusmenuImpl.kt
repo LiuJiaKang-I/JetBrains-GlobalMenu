@@ -62,7 +62,7 @@ class DbusmenuImpl(windowId: Long, private val menuHolder: MenuHolder) : Dbusmen
         properties["label"] = Variant(menu.label)
         properties["visible"] = Variant(menu.isVisible)
         properties["enabled"] = Variant(menu.isEnabled)
-        if (!menu.shortcut.isNullOrEmpty()) properties["shortcut"] = Variant(menu.shortcut)
+        if (!menu.shortcut.isNullOrEmpty()) properties["shortcut"] = Variant(arrayOf(menu.shortcut))
         if (!menu.toggleType.isNullOrEmpty()) {
             properties["toggle-type"] = Variant(menu.toggleType)
             properties["toggle-state"] = Variant(menu.toggleState)
