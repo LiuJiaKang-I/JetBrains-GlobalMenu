@@ -117,12 +117,10 @@ class SwingMenu(private val menuItem: JMenuItem?, override val id: Int, private 
         _children = when (menuItem) {
             is ActionMenu -> {
                 val ch = mutableListOf<Menu>()
-                var separators = 0
                 for (each in menuItem.popupMenu.components) {
                     if (each == null) continue
                     if (each is JSeparator) {
-                        ch.add(SwingMenu(separators, holder))
-                        separators++
+                        ch.add(SwingMenu(System.identityHashCode(each), holder))
                         continue
                     }
                     if (each !is JMenuItem) {
