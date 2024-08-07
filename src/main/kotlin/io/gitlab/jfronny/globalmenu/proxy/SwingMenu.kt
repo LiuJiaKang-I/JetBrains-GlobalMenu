@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.impl.ActionMenuItem
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.EDT
 import io.gitlab.jfronny.globalmenu.GlobalMenu
+import io.gitlab.jfronny.globalmenu.buildArray
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -49,23 +50,18 @@ class SwingMenu(private val menuItem: JMenuItem?, override val id: Int, private 
     } }
 
     override val shortcut: Array<String>? get() = menuItem?.accelerator?.let { ks ->
-        val s = getModifiers(ks.modifiers)
-        val vk = keyEvents[ks.keyCode] ?: "UNKNOWN"
-        val l = mutableListOf<String>()
-        l.addAll(s)
-        l.add(vk)
-        l.toTypedArray()
-    }
-
-    private fun getModifiers(modifiers: Int): List<String> = buildList {
-        if (modifiers and InputEvent.SHIFT_DOWN_MASK != 0) add("Shift")
-        if (modifiers and InputEvent.CTRL_DOWN_MASK != 0) add("Ctrl")
-        if (modifiers and InputEvent.META_DOWN_MASK != 0) add("Meta")
-        if (modifiers and InputEvent.ALT_DOWN_MASK != 0) add("Alt")
-        if (modifiers and InputEvent.ALT_GRAPH_DOWN_MASK != 0) add("AltGraph")
-        if (modifiers and InputEvent.BUTTON1_DOWN_MASK != 0) add("Button1")
-        if (modifiers and InputEvent.BUTTON2_DOWN_MASK != 0) add("Button2")
-        if (modifiers and InputEvent.BUTTON3_DOWN_MASK != 0) add("Button3")
+        buildArray {
+            val modifiers = ks.modifiers
+            if (modifiers and InputEvent.SHIFT_DOWN_MASK != 0) accept("Shift")
+            if (modifiers and InputEvent.CTRL_DOWN_MASK != 0) accept("Ctrl")
+            if (modifiers and InputEvent.META_DOWN_MASK != 0) accept("Meta")
+            if (modifiers and InputEvent.ALT_DOWN_MASK != 0) accept("Alt")
+            if (modifiers and InputEvent.ALT_GRAPH_DOWN_MASK != 0) accept("AltGraph")
+            if (modifiers and InputEvent.BUTTON1_DOWN_MASK != 0) accept("Button1")
+            if (modifiers and InputEvent.BUTTON2_DOWN_MASK != 0) accept("Button2")
+            if (modifiers and InputEvent.BUTTON3_DOWN_MASK != 0) accept("Button3")
+            accept(keyEvents[ks.keyCode] ?: "UNKNOWN")
+        }
     }
 
     override val toggleType: String? get() = when (menuItem) {

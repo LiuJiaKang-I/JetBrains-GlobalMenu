@@ -34,6 +34,7 @@ dependencies {
         instrumentationTools()
     }
     extraResources(project(mapOf("path" to ":native", "configuration" to "results")))
+    implementation("io.gitlab.jfronny:commons:2.0.0-SNAPSHOT")
     implementation("io.gitlab.jfronny:commons-unsafe:2.0.0-SNAPSHOT")
 //    implementation("com.github.hypfvieh:dbus-java-core:5.0.0")
 //    implementation("com.github.hypfvieh:dbus-java-transport-native-unixsocket:5.0.0")
