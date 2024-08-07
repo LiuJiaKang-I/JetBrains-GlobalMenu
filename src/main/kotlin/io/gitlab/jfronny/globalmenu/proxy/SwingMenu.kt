@@ -16,8 +16,10 @@ import java.lang.reflect.Modifier
 import javax.imageio.ImageIO
 import javax.swing.*
 
-class SwingMenu(private val menuItem: JMenuItem?, private val holder: SwingMenuHolder) : Menu.Abstract() {
-    override val id = holder.getId(menuItem)
+class SwingMenu(private val menuItem: JMenuItem?, override val id: Int, private val holder: SwingMenuHolder) : Menu.Abstract() {
+    constructor(menuItem: JMenuItem, holder: SwingMenuHolder) : this(menuItem, holder.getId(menuItem), holder)
+    constructor(id: Int, holder: SwingMenuHolder) : this(null, id, holder)
+
     override val isSeparator: Boolean get() = menuItem == null
     override val label: String get() = menuItem?.text ?: ""
     override val isEnabled: Boolean get() = menuItem?.isEnabled ?: false
@@ -115,13 +117,17 @@ class SwingMenu(private val menuItem: JMenuItem?, private val holder: SwingMenuH
         _children = when (menuItem) {
             is ActionMenu -> {
                 val ch = mutableListOf<Menu>()
+                var separators = 0
                 for (each in menuItem.popupMenu.components) {
                     if (each == null) continue
                     if (each is JSeparator) {
-                        ch.add(SwingMenu(null, holder))
+                        ch.add(SwingMenu(separators, holder))
+                        separators++
                         continue
                     }
-                    if (each !is JMenuItem) continue
+                    if (each !is JMenuItem) {
+                        continue
+                    }
                     val cmi = SwingMenu(each, holder)
                     if (deepness > 1) {
                         if (each is ActionMenu) {
