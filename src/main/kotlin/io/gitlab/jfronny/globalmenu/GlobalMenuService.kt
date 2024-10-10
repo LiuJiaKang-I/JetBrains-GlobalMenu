@@ -9,7 +9,6 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFrame
 import com.intellij.openapi.wm.impl.IdeFrameImpl
 import com.intellij.openapi.wm.impl.ProjectFrameHelper
-import com.intellij.openapi.wm.impl.welcomeScreen.FlatWelcomeFrame
 import com.intellij.platform.ide.menu.IdeJMenuBar
 import io.gitlab.jfronny.globalmenu.proxy.DbusmenuImpl
 import io.gitlab.jfronny.globalmenu.proxy.SwingMenuHolder
@@ -41,7 +40,7 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
                 menuBar = ideFrame.jMenuBar
                 frame = ideFrame
             }
-            is FlatWelcomeFrame -> {
+            is JFrame -> {
                 peer = ideFrame.peer
                 menuBar = null
                 frame = ideFrame
