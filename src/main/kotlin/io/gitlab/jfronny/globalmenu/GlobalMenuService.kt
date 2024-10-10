@@ -9,6 +9,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFrame
 import com.intellij.openapi.wm.impl.IdeFrameImpl
 import com.intellij.openapi.wm.impl.ProjectFrameHelper
+import com.intellij.openapi.wm.impl.welcomeScreen.FlatWelcomeFrame
 import com.intellij.platform.ide.menu.IdeJMenuBar
 import io.gitlab.jfronny.globalmenu.proxy.DbusmenuImpl
 import io.gitlab.jfronny.globalmenu.proxy.SwingMenuHolder
@@ -17,7 +18,6 @@ import org.freedesktop.dbus.DBusPath
 import org.freedesktop.dbus.connections.impl.DBusConnection
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder
 import org.freedesktop.dbus.types.UInt32
-import java.awt.Dimension
 import java.awt.Window
 import javax.swing.FocusManager
 import javax.swing.JFrame
@@ -32,13 +32,18 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
         val frame: JFrame
         when (ideFrame) {
             is ProjectFrameHelper -> {
-                peer = ideFrame.rootPane.peer
-                menuBar = ideFrame.rootPane.jMenuBar
+                peer = ideFrame.frame.rootPane.peer
+                menuBar = ideFrame.frame.rootPane.jMenuBar
                 frame = ideFrame.frame
             }
             is IdeFrameImpl -> {
                 peer = ideFrame.peer
                 menuBar = ideFrame.jMenuBar
+                frame = ideFrame
+            }
+            is FlatWelcomeFrame -> {
+                peer = ideFrame.peer
+                menuBar = null
                 frame = ideFrame
             }
             else -> return
@@ -52,7 +57,7 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
         if (GlobalMenu.Native.isDecorationSupported && GMSettings.getInstance().state.decorations && peer is WLPeer) {
             if (peer.decorated) {
                 peer.decorated = false
-                frame.size = Dimension(frame.width, frame.height + 1)
+                frame.forceRedraw()
                 val decoration = GlobalMenu.Native.createDecoration(peer.nativePtr)
 //                Disposer.register(lastMenu!!) { GlobalMenu.Native.destroyDecoration(decoration)
                 GlobalMenu.Native.setDecoration(decoration, 2)
@@ -63,7 +68,7 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
             // If we are a dialog (like Settings) we also need to update its properties
             // This is where we encounter a problem: the focused window might not be set yet when applicationActivated is called
             // Thus, we add this task to the EDT queue to be executed (hopefully) after the focused window is set
-            val frame1 = FocusManager.getCurrentManager().focusedWindow
+            val frame1 = FocusManager.getCurrentManager().focusedWindow ?: return@invokeLater
             if (frame != frame1) onActivate(frame1.peer, frame1, when (frame1) {
                 is JFrame -> frame1.jMenuBar
                 else -> null
@@ -116,7 +121,7 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
             peer.performLocked {
                 val ptr = GlobalMenu.Native.createMenu(windowPtr)
                 // this segfaults for some reason
-                // Yew, we leak memory on every activation without this, but unless the crash is fixed, that is the better option
+                // Yes, we leak memory on every activation without this, but unless the crash is fixed, that is the better option
 //                Disposer.register(lastMenu!!) { GlobalMenu.Native.destroyMenu(ptr) }
                 GlobalMenu.Native.setMenuAddress(ptr, conn.uniqueName, objectPath)
             }

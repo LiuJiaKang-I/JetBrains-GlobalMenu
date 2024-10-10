@@ -2,6 +2,7 @@ import com.jetbrains.plugin.structure.base.utils.createParentDirs
 import org.freedesktop.dbus.utils.generator.InterfaceCodeGenerator
 import org.jetbrains.intellij.platform.gradle.utils.asPath
 import io.gitlab.jfronny.scripts.*
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.nio.file.Files
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.createDirectories
@@ -9,8 +10,8 @@ import kotlin.io.path.deleteRecursively
 
 plugins {
     java
-    kotlin("jvm") version "1.9.24"
-    id("org.jetbrains.intellij.platform") version "2.0.0"
+    kotlin("jvm") version "2.0.20"
+    id("org.jetbrains.intellij.platform") version "2.1.0"
     id("jf.autoversion") version "1.6-SNAPSHOT"
 }
 
@@ -23,6 +24,7 @@ repositories {
 
     intellijPlatform {
         defaultRepositories()
+        snapshots()
     }
 }
 
@@ -30,7 +32,7 @@ val extraResources by configurations.creating
 
 dependencies {
     intellijPlatform {
-        intellijIdeaCommunity("2024.2")
+        intellijIdeaCommunity("243.19420.21")
         instrumentationTools()
     }
     extraResources(project(mapOf("path" to ":native", "configuration" to "results")))
@@ -158,12 +160,12 @@ tasks {
         targetCompatibility = "21"
     }
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions.jvmTarget = "21"
+        compilerOptions.jvmTarget = JvmTarget.JVM_21
     }
 
     patchPluginXml {
-        sinceBuild.set("242")
-        untilBuild.set("243.*")
+        sinceBuild.set("243")
+        untilBuild.set("244.*")
         changeNotes = changelogHtml
     }
 
