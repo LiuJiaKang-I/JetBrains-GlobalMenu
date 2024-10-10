@@ -163,8 +163,8 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("243")
-        untilBuild.set("244.*")
+        sinceBuild.set("242")
+        untilBuild.set("243.*")
         changeNotes = changelogHtml
     }
 
