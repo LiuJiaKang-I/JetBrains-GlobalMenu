@@ -16,7 +16,6 @@ plugins {
 }
 
 group = "io.gitlab.jfronny"
-version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
