@@ -57,7 +57,9 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
     }
 
     override fun applicationDeactivated(ideFrame: IdeFrame) {
-        lastMenu?.let { Disposer.dispose(it) }
+        // the menu UI provided by the system may take focus, meaning this would make interacting impossible
+        // as such, we just keep this around in memory until the next focus request to another window
+//        lastMenu?.let { Disposer.dispose(it) }
     }
 
     private var lastMenu: Disposable? = null
