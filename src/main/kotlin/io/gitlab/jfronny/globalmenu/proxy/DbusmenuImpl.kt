@@ -21,10 +21,11 @@ class DbusmenuImpl(windowId: Long, private val menuHolder: MenuHolder) : Dbusmen
     override fun getIconThemePath(): List<String> = listOf()
 
     override fun GetLayout(parentId: Int, recursionDepth: Int, propertyNames: MutableList<String>?): DPair<UInt32, GetLayoutLayoutStruct> {
+        val actualRecursionDepth = if (recursionDepth < 0) Int.MAX_VALUE else recursionDepth
         try {
             return DPair(
                 UInt32(parentId.toUInt().toLong()),
-                getLayout(parentId, recursionDepth, propertyNames, menuHolder.find(parentId)!!)
+                getLayout(parentId, actualRecursionDepth, propertyNames, menuHolder.find(parentId)!!)
             )
         } catch (e: Exception) {
             GlobalMenu.Log.error("Failed to get layout for menu $parentId", e)
@@ -36,9 +37,12 @@ class DbusmenuImpl(windowId: Long, private val menuHolder: MenuHolder) : Dbusmen
         val properties = readProperties(menu)
         val children = mutableListOf<Variant<*>>()
 
+        // technically, this means we return one more level than requested, but KDE doesn't like it if we don't
+        if (recursionDepth < 0) return GetLayoutLayoutStruct(menu.id, properties, children)
+
         menu.children?.let {
             for (sm in it) {
-                children.add(Variant(getLayout(parentId, recursionDepth, propertyNames, sm)))
+                children.add(Variant(getLayout(parentId, recursionDepth - 1, propertyNames, sm)))
             }
             properties["children-display"] = Variant("submenu")
         }
@@ -158,7 +162,8 @@ class DbusmenuImpl(windowId: Long, private val menuHolder: MenuHolder) : Dbusmen
     }
 
     fun export(conn: DBusConnection): Disposable {
-        conn.exportObject(this)
+        if (GlobalMenu.debugging) GlobalMenu.Log.warn("Exporting menu $menuPath to ${conn.uniqueName}")
+        conn.exportObject(menuPath, this)
         val signals = listOf(
             conn.addSigHandler(ItemsPropertiesUpdated::class.java, itemsPropertiesUpdated),
             conn.addSigHandler(LayoutUpdated::class.java, layoutUpdated),
@@ -171,6 +176,6 @@ class DbusmenuImpl(windowId: Long, private val menuHolder: MenuHolder) : Dbusmen
     }
 
     companion object {
-        fun getMenuPath(windowId: Long): String = "/com/canonical/menu0x${windowId.toString(16)}"
+        fun getMenuPath(windowId: Long): String = "/com/canonical/menu/0x${windowId.toString(16)}"
     }
 }
