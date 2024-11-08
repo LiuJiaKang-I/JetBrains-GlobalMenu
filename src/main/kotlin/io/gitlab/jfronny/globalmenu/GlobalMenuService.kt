@@ -7,11 +7,11 @@ import com.intellij.openapi.application.ApplicationActivationListener
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFrame
-import com.intellij.platform.ide.menu.IdeJMenuBar
 import io.gitlab.jfronny.globalmenu.proxy.DbusmenuImpl
 import io.gitlab.jfronny.globalmenu.proxy.SwingMenuHolder
 import io.gitlab.jfronny.globalmenu.reflect.Peer
 import io.gitlab.jfronny.globalmenu.reflect.introspect
+import io.gitlab.jfronny.globalmenu.reflect.maybeAddUpdateListener
 import io.gitlab.jfronny.globalmenu.reflect.peer
 import io.gitlab.jfronny.globalmenu.settings.GMSettings
 import org.freedesktop.dbus.DBusPath
@@ -73,12 +73,7 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
         connection = conn
 
         val menuHolder = SwingMenuHolder(menu, "DBusMenuRoot")
-        if (menu is IdeJMenuBar) {
-            menu.addUpdateGlobalMenuRootsListener {
-                menuHolder.update(menu.rootMenuItems)
-            }
-//            menu.updateMenuActions(true)
-        }
+        menu.maybeAddUpdateListener { items -> menuHolder.update(items) }
         //TODO handle keybindings
 //        IdeEventQueue.getInstance().addDispatcher({ e ->
 //            if (e !is KeyEvent) false
