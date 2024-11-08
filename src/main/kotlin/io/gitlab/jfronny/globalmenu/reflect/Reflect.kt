@@ -9,7 +9,3 @@ val Field.withAccess: Field get() {
     accessibleSetter.invoke(this, true)
     return this
 }
-
-fun Any.fn(name: String, vararg args: Pair<Class<*>, Any>) = javaClass
-    .getMethod(name, *args.map { it.first }.toTypedArray())
-    .invoke(this, *args.map { it.second }.toTypedArray())

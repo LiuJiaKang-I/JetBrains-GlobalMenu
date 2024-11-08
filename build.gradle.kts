@@ -181,7 +181,7 @@ tasks {
     runIde {
         jvmArgs(
             "-Dawt.toolkit.name=WLToolkit",
-//            "-Dio.gitlab.jfronny.globalmenu.debug"
+            "-Dio.gitlab.jfronny.globalmenu.debug"
         )
     }
 }

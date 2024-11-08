@@ -72,31 +72,74 @@ class DbusmenuImpl(windowId: Long, private val menuHolder: MenuHolder) : Dbusmen
     }
 
     override fun Event(id: Int, eventId: String, data: Variant<*>?, timestamp: UInt32?) {
+        when (val result = innerEvent(id, eventId, data, timestamp)) {
+            is EventResult.Failure -> throw result.e
+            is EventResult.NotFound, EventResult.Success -> {}
+        }
+    }
+
+    override fun EventGroup(events: MutableList<EventGroupStruct>): MutableList<Int> {
+        val result = mutableListOf<Int>()
+        for (event in events) {
+            if (innerEvent(event.member0, event.member1, event.member2, event.member3) is EventResult.NotFound) {
+                result.add(event.member0)
+            }
+        }
+        return result
+    }
+
+    private fun innerEvent(id: Int, eventId: String, data: Variant<*>?, timestamp: UInt32?): EventResult {
         if (GlobalMenu.debugging) GlobalMenu.Log.warn("Event $eventId for menu $id (${menuHolder.find(id)})")
         try {
+            val menu = menuHolder.find(id) ?: return EventResult.NotFound
             when (eventId) {
-                "clicked" -> menuHolder.find(id)?.onEvent()
-                "opened" -> menuHolder.find(id)?.maybeUpdate()
+                "clicked" -> menu.onEvent()
+                "opened" -> menu.maybeUpdate()
+                else -> GlobalMenu.Log.warn("Unhandled event $eventId for menu $id")
             }
+            return EventResult.Success
         } catch (e: Exception) {
             GlobalMenu.Log.error("Failed to handle event $eventId for menu $id", e)
-            throw e
+            return EventResult.Failure(e)
         }
     }
 
-    override fun EventGroup(events: MutableList<EventGroupStruct>?): MutableList<Int>? = null // not needed?
     override fun AboutToShow(id: Int): Boolean {
+        return when (val result = innerAboutToShow(id)) {
+            is EventResult.Failure -> throw result.e
+            EventResult.NotFound, EventResult.Success -> true
+        }
+    }
+
+    override fun AboutToShowGroup(ids: MutableList<Int>): DPair<MutableList<Int>, MutableList<Int>> {
+        val result = DPair<MutableList<Int>, MutableList<Int>>(mutableListOf(), mutableListOf())
+        for (id in ids) {
+            when (innerAboutToShow(id)) {
+                is EventResult.Failure -> {}
+                EventResult.NotFound -> result.b.add(id)
+                EventResult.Success -> result.a.add(id)
+            }
+        }
+        return result
+    }
+
+    private fun innerAboutToShow(id: Int): EventResult {
         if (GlobalMenu.debugging) GlobalMenu.Log.warn("About to show menu $id")
         try {
-            menuHolder.find(id)?.maybeUpdate()
-            return true
+            val menu = menuHolder.find(id) ?: return EventResult.NotFound
+            menu.maybeUpdate()
+            return EventResult.Success
         } catch (e: Exception) {
             GlobalMenu.Log.error("Failed to update menu $id", e)
-            throw e
+            return EventResult.Failure(e)
         }
-
     }
-    override fun AboutToShowGroup(ids: MutableList<Int>?): DPair<MutableList<Int>, MutableList<Int>>? = null // not needed?
+
+    private sealed interface EventResult {
+        data object Success: EventResult
+        data object NotFound: EventResult
+        data class Failure(val e: Exception): EventResult
+    }
 
     companion object {
         fun getMenuPath(windowId: Long): String = "/com/canonical/menu0x${windowId.toString(16)}"
