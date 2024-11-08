@@ -9,14 +9,12 @@ import org.freedesktop.dbus.types.Variant
 class DbusmenuImpl(windowId: Long, private val menuHolder: MenuHolder) : Dbusmenu {
     private val menuPath: String = getMenuPath(windowId)
     override fun getObjectPath(): String = menuPath
-//    override fun getVersion(): UInt32 = UInt32(3)
-//    override fun getTextDirection(): String = "none"
-//    override fun getStatus(): String = "normal"
-//
-//    override fun getIconThemePath(): Dbusmenu.PropertyIconThemePathType =
-//        object : Dbusmenu.PropertyIconThemePathType, List<String> by listOf() {}
+    override fun getVersion(): UInt32 = UInt32(3)
+    override fun getTextDirection(): String = "none"
+    override fun getStatus(): String = "normal"
+    override fun getIconThemePath(): List<String> = listOf()
 
-    override fun GetLayout(parentId: Int, recursionDepth: Int, propertyNames: MutableList<String>?): DPair<UInt32, GetLayoutStruct> {
+    override fun GetLayout(parentId: Int, recursionDepth: Int, propertyNames: MutableList<String>?): DPair<UInt32, GetLayoutLayoutStruct> {
         try {
             return DPair(
                 UInt32(parentId.toUInt().toLong()),
@@ -28,7 +26,7 @@ class DbusmenuImpl(windowId: Long, private val menuHolder: MenuHolder) : Dbusmen
         }
     }
 
-    private fun getLayout(parentId: Int, recursionDepth: Int, propertyNames: MutableList<String>?, menu: Menu): GetLayoutStruct {
+    private fun getLayout(parentId: Int, recursionDepth: Int, propertyNames: MutableList<String>?, menu: Menu): GetLayoutLayoutStruct {
         val properties = readProperties(menu)
         val children = mutableListOf<Variant<*>>()
 
@@ -39,16 +37,16 @@ class DbusmenuImpl(windowId: Long, private val menuHolder: MenuHolder) : Dbusmen
             properties["children-display"] = Variant("submenu")
         }
 
-        return GetLayoutStruct(menu.id, properties, children)
+        return GetLayoutLayoutStruct(menu.id, properties, children)
     }
 
     override fun GetGroupProperties(
         ids: MutableList<Int>,
         propertyNames: MutableList<String>?
-    ): MutableList<GetGroupPropertiesStruct> = mutableListOf<GetGroupPropertiesStruct>().apply {
+    ): MutableList<GetGroupPropertiesPropertiesStruct> = mutableListOf<GetGroupPropertiesPropertiesStruct>().apply {
         ids.forEach { id ->
             menuHolder.find(id)?.let { menu ->
-                add(GetGroupPropertiesStruct(id, readProperties(menu)))
+                add(GetGroupPropertiesPropertiesStruct(id, readProperties(menu)))
             }
         }
     }
@@ -78,7 +76,7 @@ class DbusmenuImpl(windowId: Long, private val menuHolder: MenuHolder) : Dbusmen
         }
     }
 
-    override fun EventGroup(events: MutableList<EventGroupStruct>): MutableList<Int> {
+    override fun EventGroup(events: MutableList<EventGroupEventsStruct>): MutableList<Int> {
         val result = mutableListOf<Int>()
         for (event in events) {
             if (innerEvent(event.member0, event.member1, event.member2, event.member3) is EventResult.NotFound) {
