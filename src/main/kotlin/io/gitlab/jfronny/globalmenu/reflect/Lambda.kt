@@ -1,4 +1,4 @@
-package io.gitlab.jfronny.globalmenu
+package io.gitlab.jfronny.globalmenu.reflect
 
 import java.util.function.*
 import java.util.function.Function

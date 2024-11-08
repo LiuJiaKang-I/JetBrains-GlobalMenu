@@ -7,11 +7,12 @@ import com.intellij.openapi.application.ApplicationActivationListener
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFrame
-import com.intellij.openapi.wm.impl.IdeFrameImpl
-import com.intellij.openapi.wm.impl.ProjectFrameHelper
 import com.intellij.platform.ide.menu.IdeJMenuBar
 import io.gitlab.jfronny.globalmenu.proxy.DbusmenuImpl
 import io.gitlab.jfronny.globalmenu.proxy.SwingMenuHolder
+import io.gitlab.jfronny.globalmenu.reflect.Peer
+import io.gitlab.jfronny.globalmenu.reflect.introspect
+import io.gitlab.jfronny.globalmenu.reflect.peer
 import io.gitlab.jfronny.globalmenu.settings.GMSettings
 import org.freedesktop.dbus.DBusPath
 import org.freedesktop.dbus.connections.impl.DBusConnection
@@ -26,34 +27,14 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
     override fun applicationActivated(ideFrame: IdeFrame) {
         super.applicationActivated(ideFrame)
         if (!GlobalMenu.Native.isSupported) return
-        val peer: Peer
-        val menuBar: JMenuBar?
-        val frame: JFrame
-        when (ideFrame) {
-            is ProjectFrameHelper -> {
-                peer = ideFrame.frame.rootPane.peer
-                menuBar = ideFrame.frame.rootPane.jMenuBar
-                frame = ideFrame.frame
-            }
-            is IdeFrameImpl -> {
-                peer = ideFrame.peer
-                menuBar = ideFrame.jMenuBar
-                frame = ideFrame
-            }
-            is JFrame -> {
-                peer = ideFrame.peer
-                menuBar = null
-                frame = ideFrame
-            }
-            else -> return
-        }
-        onActivate(peer, frame, menuBar)
+        val introspection = ideFrame.introspect() ?: return
+        onActivate(introspection.peer, introspection.frame, introspection.jMenuBar)
     }
 
     private fun onActivate(peer: Peer, frame: Window, menuBar: JMenuBar?) {
         if (GlobalMenu.Native.isMenuSupported && GMSettings.getInstance().state.menu && menuBar != null) addGlobalMenu(menuBar, peer)
         else connection?.unExportObject(DbusmenuImpl.getMenuPath(peer.nativePtr))
-        if (GlobalMenu.Native.isDecorationSupported && GMSettings.getInstance().state.decorations && peer is WLPeer) {
+        if (GlobalMenu.Native.isDecorationSupported && GMSettings.getInstance().state.decorations && peer is Peer.WL) {
             if (peer.decorated) {
                 peer.decorated = false
                 frame.forceRedraw()
@@ -116,7 +97,7 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
         conn.exportObject(menu)
         Disposer.register(lastMenu!!) { conn.unExportObject(objectPath) }
 
-        if (peer is WLPeer) {
+        if (peer is Peer.WL) {
             peer.performLocked {
                 val ptr = GlobalMenu.Native.createMenu(windowPtr)
                 // this segfaults for some reason
