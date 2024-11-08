@@ -94,8 +94,7 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
         val windowPtr = peer.nativePtr
         val menu = DbusmenuImpl(windowPtr, menuHolder)
         val objectPath = menu.objectPath
-        conn.exportObject(menu)
-        Disposer.register(lastMenu!!) { conn.unExportObject(objectPath) }
+        Disposer.register(lastMenu!!, menu.export(conn))
 
         if (peer is Peer.WL) {
             peer.performLocked {

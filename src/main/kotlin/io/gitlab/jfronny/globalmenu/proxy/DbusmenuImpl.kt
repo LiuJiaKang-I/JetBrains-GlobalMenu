@@ -1,8 +1,14 @@
 package io.gitlab.jfronny.globalmenu.proxy
 
 import com.canonical.*
+import com.canonical.Dbusmenu.ItemActivationRequested
+import com.canonical.Dbusmenu.ItemsPropertiesUpdated
+import com.canonical.Dbusmenu.LayoutUpdated
+import com.intellij.openapi.Disposable
 import io.gitlab.jfronny.globalmenu.DPair
 import io.gitlab.jfronny.globalmenu.GlobalMenu
+import org.freedesktop.dbus.connections.impl.DBusConnection
+import org.freedesktop.dbus.interfaces.DBusSigHandler
 import org.freedesktop.dbus.types.UInt32
 import org.freedesktop.dbus.types.Variant
 
@@ -137,6 +143,31 @@ class DbusmenuImpl(windowId: Long, private val menuHolder: MenuHolder) : Dbusmen
         data object Success: EventResult
         data object NotFound: EventResult
         data class Failure(val e: Exception): EventResult
+    }
+
+    private val itemsPropertiesUpdated: DBusSigHandler<ItemsPropertiesUpdated> = DBusSigHandler { item ->
+        if (GlobalMenu.debugging) GlobalMenu.Log.warn("Items properties updated (updated: ${item.updatedProps}, removed: ${item.removedProps})")
+    }
+
+    private val layoutUpdated: DBusSigHandler<LayoutUpdated> = DBusSigHandler { item ->
+        if (GlobalMenu.debugging) GlobalMenu.Log.warn("Layout updated (parent: ${item.parent}, revision: ${item.revision})")
+    }
+
+    private val itemActivationRequested: DBusSigHandler<ItemActivationRequested> = DBusSigHandler { item ->
+        if (GlobalMenu.debugging) GlobalMenu.Log.warn("Item activation requested: ${item.id}")
+    }
+
+    fun export(conn: DBusConnection): Disposable {
+        conn.exportObject(this)
+        val signals = listOf(
+            conn.addSigHandler(ItemsPropertiesUpdated::class.java, itemsPropertiesUpdated),
+            conn.addSigHandler(LayoutUpdated::class.java, layoutUpdated),
+            conn.addSigHandler(ItemActivationRequested::class.java, itemActivationRequested)
+        )
+        return Disposable {
+            conn.unExportObject(menuPath)
+            signals.forEach { it.close() }
+        }
     }
 
     companion object {

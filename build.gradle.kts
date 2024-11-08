@@ -71,7 +71,9 @@ abstract class InterfaceGenerateTask : DefaultTask() {
             false,
             introspectionData,
             objectPath.get(),
-            busName.get()
+            busName.get(),
+            null,
+            true
         )
         val analyze = generator.analyze(true)!!
         if (analyze.isEmpty()) throw IllegalStateException("No interfaces found")
