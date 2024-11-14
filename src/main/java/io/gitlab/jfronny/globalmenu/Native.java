@@ -3,6 +3,7 @@ package io.gitlab.jfronny.globalmenu;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 import java.util.Optional;
 
 public class Native {
@@ -28,7 +29,7 @@ public class Native {
             problem = "Explicitly disabled";
         } else {
             String _problem = null;
-            try (InputStream is = Native.class.getResourceAsStream("/libnative.so")) {
+            try (InputStream is = Objects.requireNonNull(Native.class.getResourceAsStream("/libnative.so"))) {
                 Path path = Files.createTempFile("globalmenu-natives", ".so");
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                     try {

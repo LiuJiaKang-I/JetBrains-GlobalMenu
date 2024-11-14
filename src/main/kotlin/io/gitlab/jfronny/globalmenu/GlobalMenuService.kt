@@ -67,15 +67,15 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
     private var lastMenu: Disposable? = null
     private var connection: DBusConnection? = null
 
-    private fun addGlobalMenu(menu: JMenuBar, peer: Peer) = app.invokeLater {
+    private fun addGlobalMenu(menuBar: JMenuBar, peer: Peer) = app.invokeLater {
         lastMenu?.let { Disposer.dispose(it) }
         lastMenu = Disposer.newDisposable()
 
         val conn = connection ?: DBusConnectionBuilder.forSessionBus().build()
         connection = conn
 
-        val menuHolder = SwingMenuHolder(menu, "DBusMenuRoot")
-        menu.maybeAddUpdateListener { items -> menuHolder.update(items) }
+        val menuHolder = SwingMenuHolder(menuBar, "DBusMenuRoot")
+        menuBar.maybeAddUpdateListener { items -> menuHolder.update(items) }
         //TODO handle keybindings
 //        IdeEventQueue.getInstance().addDispatcher({ e ->
 //            if (e !is KeyEvent) false
