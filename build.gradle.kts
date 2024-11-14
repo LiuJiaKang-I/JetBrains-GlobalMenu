@@ -23,7 +23,7 @@ repositories {
 
     intellijPlatform {
         defaultRepositories()
-        snapshots()
+//        snapshots()
     }
 }
 
@@ -31,12 +31,12 @@ val extraResources by configurations.creating
 
 dependencies {
     intellijPlatform {
-        intellijIdeaCommunity("243.19420.21")
+        intellijIdeaCommunity("2024.3")
         instrumentationTools()
     }
     extraResources(project(mapOf("path" to ":native", "configuration" to "results")))
-    implementation("io.gitlab.jfronny:commons:2.0.0-SNAPSHOT")
-    implementation("io.gitlab.jfronny:commons-unsafe:2.0.0-SNAPSHOT")
+    implementation("io.gitlab.jfronny:commons:1.8.0-SNAPSHOT")
+    implementation("io.gitlab.jfronny:commons-unsafe:1.8.0-SNAPSHOT")
     implementation("com.github.hypfvieh:dbus-java-core:5.1.0")
     implementation("com.github.hypfvieh:dbus-java-transport-native-unixsocket:5.1.0")
 }
@@ -165,7 +165,7 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("242")
+        sinceBuild.set("243")
         untilBuild.set("243.*")
         changeNotes = changelogHtml
     }
