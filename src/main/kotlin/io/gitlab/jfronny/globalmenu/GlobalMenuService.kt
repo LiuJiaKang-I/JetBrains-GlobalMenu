@@ -26,15 +26,17 @@ import javax.swing.JMenuBar
 class GlobalMenuService(private val app: Application) : ApplicationActivationListener {
     override fun applicationActivated(ideFrame: IdeFrame) {
         super.applicationActivated(ideFrame)
-        if (!GlobalMenu.Native.isSupported) return
         val introspection = ideFrame.introspect() ?: return
         onActivate(introspection.peer, introspection.frame, introspection.jMenuBar)
     }
 
     private fun onActivate(peer: Peer, frame: Window, menuBar: JMenuBar?) {
-        if (GlobalMenu.Native.isMenuSupported && GMSettings.getInstance().state.menu && menuBar != null) addGlobalMenu(menuBar, peer)
+        if ((peer !is Peer.WL || GlobalMenu.Native.isMenuSupported) && GMSettings.getInstance().state.menu && menuBar != null) addGlobalMenu(menuBar, peer)
         else connection?.unExportObject(DbusmenuImpl.getMenuPath(peer.nativePtr))
-        if (GlobalMenu.Native.isDecorationSupported && GMSettings.getInstance().state.decorations && peer is Peer.WL) {
+        if (GlobalMenu.Native.isSupported
+            && GlobalMenu.Native.isDecorationSupported
+            && GMSettings.getInstance().state.decorations
+            && peer is Peer.WL) {
             if (peer.decorated) {
                 peer.decorated = false
                 frame.forceRedraw()
@@ -102,7 +104,7 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
                 GlobalMenu.Native.setMenuAddress(ptr, conn.uniqueName, objectPath)
             }
         } else {
-            val registrar = conn.getRemoteObject("org.canonical.AppMenu.Registrar", "/com/canonical/AppMenu/Registrar", Registrar::class.java)
+            val registrar = conn.getRemoteObject("com.canonical.AppMenu.Registrar", "/com/canonical/AppMenu/Registrar", Registrar::class.java)
             registrar.RegisterWindow(UInt32(windowPtr), DBusPath(objectPath))
             Disposer.register(lastMenu!!) { registrar.UnregisterWindow(UInt32(windowPtr)) }
         }
