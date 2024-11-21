@@ -23,3 +23,4 @@ buildscript {
 rootProject.name = "globalmenu"
 
 include("native")
+include("dbusmenu4j")

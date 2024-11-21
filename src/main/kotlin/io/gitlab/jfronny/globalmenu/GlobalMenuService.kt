@@ -7,7 +7,8 @@ import com.intellij.openapi.application.ApplicationActivationListener
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFrame
-import io.gitlab.jfronny.globalmenu.proxy.DbusmenuImpl
+import io.gitlab.jfronny.dbusmenu4j.DMLog
+import io.gitlab.jfronny.dbusmenu4j.DbusmenuImpl
 import io.gitlab.jfronny.globalmenu.proxy.SwingMenuHolder
 import io.gitlab.jfronny.globalmenu.reflect.Peer
 import io.gitlab.jfronny.globalmenu.reflect.introspect
@@ -66,6 +67,11 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
 
     private var lastMenu: Disposable? = null
     private var connection: DBusConnection? = null
+    private val dmLog: DMLog = object: DMLog {
+        override fun warn(message: String?) = GlobalMenu.Log.warn(message)
+        override fun error(text: String?, exception: Throwable?) = GlobalMenu.Log.error(text, exception)
+        override fun isDebug(): Boolean = GlobalMenu.debugging
+    }
 
     private fun addGlobalMenu(menuBar: JMenuBar, peer: Peer) = app.invokeLater {
         lastMenu?.let { Disposer.dispose(it) }
@@ -91,9 +97,9 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
 //        }, lastMenu!!)
 
         val windowPtr = peer.nativePtr
-        val menu = DbusmenuImpl(windowPtr, menuHolder)
+        val menu = DbusmenuImpl(windowPtr, menuHolder, dmLog)
         val objectPath = menu.objectPath
-        Disposer.register(lastMenu!!, menu.export(conn))
+        Disposer.register(lastMenu!!, menu.export(conn)::close)
 
         if (peer is Peer.WL) {
             peer.performLocked {

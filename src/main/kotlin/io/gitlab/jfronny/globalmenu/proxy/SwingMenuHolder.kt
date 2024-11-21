@@ -2,6 +2,8 @@ package io.gitlab.jfronny.globalmenu.proxy
 
 import com.intellij.openapi.actionSystem.impl.ActionMenu
 import com.intellij.openapi.actionSystem.impl.ActionMenuItem
+import io.gitlab.jfronny.dbusmenu4j.Menu
+import io.gitlab.jfronny.dbusmenu4j.MenuHolder
 import javax.swing.JMenuBar
 import javax.swing.JMenuItem
 

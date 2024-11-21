@@ -1,4 +1,4 @@
-package io.gitlab.jfronny.globalmenu;
+package io.gitlab.jfronny.dbusmenu4j;
 
 import org.freedesktop.dbus.Tuple;
 import org.freedesktop.dbus.annotations.Position;

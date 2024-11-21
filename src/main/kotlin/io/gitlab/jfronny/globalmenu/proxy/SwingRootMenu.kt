@@ -2,23 +2,24 @@ package io.gitlab.jfronny.globalmenu.proxy
 
 import com.intellij.openapi.actionSystem.impl.ActionMenu
 import com.intellij.openapi.application.EDT
+import io.gitlab.jfronny.dbusmenu4j.Menu
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.swing.JMenuItem
 
 class SwingRootMenu(private var menuItems: List<JMenuItem>?, private val name: String, private val holder: SwingMenuHolder): Menu.Abstract() {
-    override val id: Int get() = 0
-    override val isSeparator: Boolean get() = menuItems == null
-    override val label: String get() = name
-    override val isEnabled: Boolean get() = true
-    override val isVisible: Boolean get() = true
-    override val iconData: ByteArray? get() = null
-    override val shortcut: Array<String>? get() = null
-    override val toggleType: String? get() = null
-    override val toggleState: Int get() = 0
+    override fun getId() = 0
+    override fun isSeparator() = menuItems == null
+    override fun getLabel() = name
+    override fun isEnabled() = true
+    override fun isVisible() = true
+    override fun getIconData() = null
+    override fun getShortcut() = null
+    override fun getToggleType() = null
+    override fun getToggleState() = 0
     private var _children: List<Menu>? = null
-    override val children: List<Menu>? get() = _children
+    override fun getChildren() = _children
 
     override fun onEvent() {
     }

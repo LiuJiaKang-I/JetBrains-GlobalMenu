@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.impl.ActionMenu
 import com.intellij.openapi.actionSystem.impl.ActionMenuItem
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.EDT
+import io.gitlab.jfronny.dbusmenu4j.Menu
 import io.gitlab.jfronny.globalmenu.GlobalMenu
 import io.gitlab.jfronny.globalmenu.buildArray
 import kotlinx.coroutines.Dispatchers
@@ -17,15 +18,17 @@ import java.lang.reflect.Modifier
 import javax.imageio.ImageIO
 import javax.swing.*
 
-class SwingMenu(private val menuItem: JMenuItem?, override val id: Int, private val holder: SwingMenuHolder) : Menu.Abstract() {
+class SwingMenu(private val menuItem: JMenuItem?, id: Int, private val holder: SwingMenuHolder) : Menu.Abstract() {
+    private val id_ = id;
+    override fun getId() = id_
     constructor(menuItem: JMenuItem, holder: SwingMenuHolder) : this(menuItem, holder.getId(menuItem), holder)
     constructor(id: Int, holder: SwingMenuHolder) : this(null, id, holder)
 
-    override val isSeparator: Boolean get() = menuItem == null
-    override val label: String get() = menuItem?.text ?: ""
-    override val isEnabled: Boolean get() = menuItem?.isEnabled ?: false
-    override val isVisible: Boolean get() = menuItem?.isVisible ?: false
-    override val iconData: ByteArray? by lazy { menuItem?.icon?.let { icon ->
+    override fun isSeparator() = menuItem == null
+    override fun getLabel() = menuItem?.text ?: ""
+    override fun isEnabled() = menuItem?.isEnabled ?: false
+    override fun isVisible() = menuItem?.isVisible ?: false
+    private val iconData_: ByteArray? by lazy { menuItem?.icon?.let { icon ->
         // This is somewhat expensive, but we need to do it
         // At least avoid doing it multiple times
         val width = icon.iconWidth
@@ -48,8 +51,9 @@ class SwingMenu(private val menuItem: JMenuItem?, override val id: Int, private 
             null
         }
     } }
+    override fun getIconData() = iconData_
 
-    override val shortcut: Array<String>? get() = menuItem?.accelerator?.let { ks ->
+    override fun getShortcut() = menuItem?.accelerator?.let { ks ->
         buildArray {
             val modifiers = ks.modifiers
             if (modifiers and InputEvent.SHIFT_DOWN_MASK != 0) accept("Shift")
@@ -64,7 +68,7 @@ class SwingMenu(private val menuItem: JMenuItem?, override val id: Int, private 
         }
     }
 
-    override val toggleType: String? get() = when (menuItem) {
+    override fun getToggleType() = when (menuItem) {
         is ActionMenuItem -> {
             //TODO handle action items
             if (menuItem.isToggleable) "checkmark"
@@ -74,9 +78,9 @@ class SwingMenu(private val menuItem: JMenuItem?, override val id: Int, private 
         is JCheckBoxMenuItem -> "checkmark"
         else -> null
     }
-    override val toggleState: Int get() = if (toggleType?.isNotEmpty() == true) if (menuItem!!.isSelected) 1 else 0 else -1
+    override fun getToggleState() = if (toggleType?.isNotEmpty() == true) if (menuItem!!.isSelected) 1 else 0 else -1
     private var _children: List<Menu>? = null
-    override val children: List<Menu>? get() = _children
+    override fun getChildren() = _children
 
     override fun onEvent() {
         if (menuItem == null) return
@@ -141,7 +145,7 @@ class SwingMenu(private val menuItem: JMenuItem?, override val id: Int, private 
     }
 
     override fun toString(): String {
-        return "SwingMenu(id=$id, menuItem=$menuItem)"
+        return "SwingMenu(id=$id_, menuItem=$menuItem)"
     }
 
     companion object {
