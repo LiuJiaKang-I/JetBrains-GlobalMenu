@@ -23,6 +23,7 @@
     <br>
     Notes:
     <ul>
+      <li>This plugin does not hide the menu UI integrated in IDEA. Configure it to use the hamburger menu, then it shouldn't get in your way.</li>
       <li>This plugin is developed for x86_64 Linux systems and will not do anything elsewhere</li>
       <li>This plugin is not dependent on KDE, even though the KDE appmenu protocol is used.<br>
           Available features will automatically be detected.</li>

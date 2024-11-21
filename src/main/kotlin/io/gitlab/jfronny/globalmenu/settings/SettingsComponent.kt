@@ -21,13 +21,17 @@ class SettingsComponent {
                         bold()
                         component.foreground = JBColor.RED
                     }
-                    label("The plugin will not work on Wayland")
+                }
+                row {
+                    label("The plugin will not work on Wayland (it should still work on X11)")
                 }
             } else {
                 row {
                     label("Native library loaded successfully").apply {
                         component.foreground = JBColor.GREEN
                     }
+                }
+                row {
                     label("The plugin should work as expected")
                 }
                 if (!GlobalMenu.Native.isMenuSupported) {
