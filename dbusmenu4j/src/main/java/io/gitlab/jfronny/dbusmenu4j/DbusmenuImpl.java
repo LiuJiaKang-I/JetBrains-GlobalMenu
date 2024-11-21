@@ -52,7 +52,7 @@ public class DbusmenuImpl implements Dbusmenu {
         try {
             return new DPair<>(
                     new UInt32(Integer.toUnsignedLong(parentId)),
-                    getLayout(parentId, actualRecursionDepth, propertyNames, menuHolder.find(parentId))
+                    getLayout(parentId, actualRecursionDepth, propertyNames, Objects.requireNonNull(menuHolder.find(parentId)))
             );
         } catch (Exception e) {
             log.error("Failed to get layout for menu " + parentId, e);

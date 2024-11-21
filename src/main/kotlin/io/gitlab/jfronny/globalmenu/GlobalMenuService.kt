@@ -9,7 +9,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFrame
 import io.gitlab.jfronny.dbusmenu4j.DMLog
 import io.gitlab.jfronny.dbusmenu4j.DbusmenuImpl
-import io.gitlab.jfronny.globalmenu.proxy.SwingMenuHolder
+import io.gitlab.jfronny.globalmenu.proxy.ActionMenuHolder
 import io.gitlab.jfronny.globalmenu.reflect.Peer
 import io.gitlab.jfronny.globalmenu.reflect.introspect
 import io.gitlab.jfronny.globalmenu.reflect.maybeAddUpdateListener
@@ -67,11 +67,6 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
 
     private var lastMenu: Disposable? = null
     private var connection: DBusConnection? = null
-    private val dmLog: DMLog = object: DMLog {
-        override fun warn(message: String?) = GlobalMenu.Log.warn(message)
-        override fun error(text: String?, exception: Throwable?) = GlobalMenu.Log.error(text, exception)
-        override fun isDebug(): Boolean = GlobalMenu.debugging
-    }
 
     private fun addGlobalMenu(menuBar: JMenuBar, peer: Peer) = app.invokeLater {
         lastMenu?.let { Disposer.dispose(it) }
@@ -80,7 +75,7 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
         val conn = connection ?: DBusConnectionBuilder.forSessionBus().build()
         connection = conn
 
-        val menuHolder = SwingMenuHolder(menuBar, "DBusMenuRoot")
+        val menuHolder = ActionMenuHolder(menuBar, "DBusMenuRoot")
         menuBar.maybeAddUpdateListener { items -> menuHolder.update(items) }
         //TODO handle keybindings
 //        IdeEventQueue.getInstance().addDispatcher({ e ->
@@ -97,7 +92,7 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
 //        }, lastMenu!!)
 
         val windowPtr = peer.nativePtr
-        val menu = DbusmenuImpl(windowPtr, menuHolder, dmLog)
+        val menu = DbusmenuImpl(windowPtr, menuHolder, GlobalMenu)
         val objectPath = menu.objectPath
         Disposer.register(lastMenu!!, menu.export(conn)::close)
 
