@@ -5,7 +5,7 @@ plugins {
     java
     kotlin("jvm") version "2.0.20"
     id("org.jetbrains.intellij.platform") version "2.1.0"
-    id("jf.autoversion") version "1.6-SNAPSHOT"
+    id("jf.autoversion")
 }
 
 group = "io.gitlab.jfronny"

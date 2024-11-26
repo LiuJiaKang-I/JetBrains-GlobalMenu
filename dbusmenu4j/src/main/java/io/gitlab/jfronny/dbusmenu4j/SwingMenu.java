@@ -5,8 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Modifier;
@@ -157,6 +156,10 @@ public class SwingMenu<R extends SwingRootMenu<R, ?>, T extends SwingMenuHolder<
 
     @Override
     public void onEvent() {
+        var event = new ActionEvent(menuItem, ActionEvent.ACTION_PERFORMED, menuItem.getActionCommand());
+        for (ActionListener listener : menuItem.getActionListeners()) {
+            listener.actionPerformed(event);
+        }
         switch (menuItem) {
             case JCheckBoxMenuItem c -> c.setSelected(!c.isSelected());
             case JRadioButtonMenuItem r -> r.setSelected(true);

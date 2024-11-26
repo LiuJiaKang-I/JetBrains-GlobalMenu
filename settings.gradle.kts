@@ -6,8 +6,12 @@ pluginManagement {
             content {
                 includeGroup("io.gitlab.jfronny")
                 includeGroup("jf.autoversion")
+                includeGroup("jf.maven-publish")
             }
         }
+    }
+    plugins {
+        id("jf.autoversion") version "1.6-SNAPSHOT"
     }
 }
 

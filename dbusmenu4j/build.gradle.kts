@@ -8,9 +8,11 @@ import kotlin.io.path.deleteRecursively
 
 plugins {
     `java-library`
+    id("jf.maven-publish")
 }
 
 group = "io.gitlab.jfronny"
+version = rootProject.version
 
 repositories {
     mavenCentral()
@@ -96,6 +98,14 @@ sourceSets {
         java {
             srcDir(layout.buildDirectory.dir("generated/dbus/menu"))
             srcDir(layout.buildDirectory.dir("generated/dbus/registrar"))
+        }
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
         }
     }
 }
