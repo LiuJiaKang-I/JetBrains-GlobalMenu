@@ -1,0 +1,9 @@
+#include https://pages.frohnmeyer-wds.de/scripts/clone.yml
+
+steps:
+  build_test:
+    image: gradle:8.10-jammy
+    pull: true
+    commands:
+      - gradle --build-cache :dbusmenu4j:publish -Pmaven="https://maven.frohnmeyer-wds.de/artifacts"
+    secrets: [ maven_token, maven_name, modrinth_api_token, curseforge_api_token ]
