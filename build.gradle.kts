@@ -24,7 +24,7 @@ val extraResources by configurations.creating
 
 dependencies {
     intellijPlatform {
-        intellijIdeaCommunity("2024.3")
+        intellijIdeaCommunity("2024.3.1")
         instrumentationTools()
     }
     extraResources(project(mapOf("path" to ":native", "configuration" to "results")))
