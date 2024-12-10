@@ -4,7 +4,6 @@ import java.util.function.*
 import java.util.function.Function
 
 val <T, R> Function<T, R>.unchecked: Function<Any, R> get() = Function { it: Any -> apply(it as T) }
-val <T> Consumer<T>.unchecked: Consumer<Any> get() = Consumer { accept(it as T) }
 val <T1, T2> BiConsumer<T1, T2>.unchecked1: BiConsumer<Any, T2> get() = BiConsumer { t1: Any, t2: T2 -> accept(t1 as T1, t2) }
 operator fun Runnable.invoke() = run()
 operator fun <T> Supplier<T>.invoke() = get()

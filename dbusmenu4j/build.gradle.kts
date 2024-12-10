@@ -16,12 +16,15 @@ version = rootProject.version
 
 repositories {
     mavenCentral()
+    maven("https://maven.frohnmeyer-wds.de/artifacts")
 }
 
 dependencies {
     compileOnly("org.jetbrains:annotations:26.0.1")
     api("com.github.hypfvieh:dbus-java-core:5.1.0")
     implementation("com.github.hypfvieh:dbus-java-transport-native-unixsocket:5.1.0")
+    implementation("io.gitlab.jfronny:commons:1.8.0-SNAPSHOT")
+    implementation("io.gitlab.jfronny:commons-unsafe:1.8.0-SNAPSHOT")
 }
 
 abstract class InterfaceGenerateTask : DefaultTask() {

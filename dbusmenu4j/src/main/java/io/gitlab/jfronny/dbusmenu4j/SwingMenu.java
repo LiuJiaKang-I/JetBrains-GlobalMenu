@@ -2,6 +2,8 @@ package io.gitlab.jfronny.dbusmenu4j;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -13,24 +15,24 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class SwingMenu<R extends SwingRootMenu<R, ?>, T extends SwingMenuHolder<R>> extends Menu.Abstract {
+    private static final Logger log = LoggerFactory.getLogger("dbusmenu4j/SwingMenu");
+
     protected final @Nullable JMenuItem menuItem;
     private final int id;
     protected final T holder;
-    private final DMLog log;
 
-    public SwingMenu(@Nullable JMenuItem menuItem, int id, T holder, DMLog log) {
+    public SwingMenu(@Nullable JMenuItem menuItem, int id, T holder) {
         this.menuItem = menuItem;
         this.id = id;
         this.holder = holder;
-        this.log = log;
     }
 
-    public SwingMenu(JMenuItem menuItem, T holder, DMLog log) {
-        this(menuItem, holder.getId(menuItem), holder, log);
+    public SwingMenu(JMenuItem menuItem, T holder) {
+        this(menuItem, holder.getId(menuItem), holder);
     }
 
-    public SwingMenu(int id, T holder, DMLog log) {
-        this(null, id, holder, log);
+    public SwingMenu(int id, T holder) {
+        this(null, id, holder);
     }
 
     @Override
@@ -174,15 +176,15 @@ public class SwingMenu<R extends SwingRootMenu<R, ?>, T extends SwingMenuHolder<
             for (int i = 0; i < len; i++) {
                 JMenuItem item = menu.getItem(i);
                 if (item == null) continue;
-                SwingMenu<R, T> swingMenu = child(item, holder, log);
+                SwingMenu<R, T> swingMenu = child(item, holder);
                 if (depth > 0) swingMenu.syncChildren(depth - 1);
                 children.add(swingMenu);
             }
         }
     }
 
-    protected SwingMenu<R, T> child(JMenuItem item, T holder, DMLog log) {
-        return new SwingMenu<>(item, holder, log);
+    protected SwingMenu<R, T> child(JMenuItem item, T holder) {
+        return new SwingMenu<>(item, holder);
     }
 
     @Override

@@ -7,13 +7,11 @@ import com.intellij.openapi.application.ApplicationActivationListener
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFrame
-import io.gitlab.jfronny.dbusmenu4j.DMLog
 import io.gitlab.jfronny.dbusmenu4j.DbusmenuImpl
+import io.gitlab.jfronny.dbusmenu4j.Peer
 import io.gitlab.jfronny.globalmenu.proxy.ActionMenuHolder
-import io.gitlab.jfronny.globalmenu.reflect.Peer
 import io.gitlab.jfronny.globalmenu.reflect.introspect
 import io.gitlab.jfronny.globalmenu.reflect.maybeAddUpdateListener
-import io.gitlab.jfronny.globalmenu.reflect.peer
 import io.gitlab.jfronny.globalmenu.settings.GMSettings
 import org.freedesktop.dbus.DBusPath
 import org.freedesktop.dbus.connections.impl.DBusConnection
@@ -33,15 +31,15 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
 
     private fun onActivate(peer: Peer, frame: Window, menuBar: JMenuBar?) {
         if ((peer !is Peer.WL || GlobalMenu.Native.isMenuSupported) && GMSettings.getInstance().state.menu && menuBar != null) addGlobalMenu(menuBar, peer)
-        else connection?.unExportObject(DbusmenuImpl.getMenuPath(peer.nativePtr))
+        else connection?.unExportObject(DbusmenuImpl.getMenuPath(peer.nativePointer()))
         if (GlobalMenu.Native.isSupported
             && GlobalMenu.Native.isDecorationSupported
             && GMSettings.getInstance().state.decorations
             && peer is Peer.WL) {
-            if (peer.decorated) {
-                peer.decorated = false
+            if (peer.isDecorated) {
+                peer.isDecorated = false
                 frame.forceRedraw()
-                val decoration = GlobalMenu.Native.createDecoration(peer.nativePtr)
+                val decoration = GlobalMenu.Native.createDecoration(peer.nativePointer())
 //                Disposer.register(lastMenu!!) { GlobalMenu.Native.destroyDecoration(decoration)
                 GlobalMenu.Native.setDecoration(decoration, 2)
             }
@@ -52,7 +50,7 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
             // This is where we encounter a problem: the focused window might not be set yet when applicationActivated is called
             // Thus, we add this task to the EDT queue to be executed (hopefully) after the focused window is set
             val frame1 = FocusManager.getCurrentManager().focusedWindow ?: return@invokeLater
-            if (frame != frame1) onActivate(frame1.peer, frame1, when (frame1) {
+            if (frame != frame1) onActivate(Peer.Resolver.resolve(frame1), frame1, when (frame1) {
                 is JFrame -> frame1.jMenuBar
                 else -> null
             })
@@ -91,8 +89,8 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
 //            }
 //        }, lastMenu!!)
 
-        val windowPtr = peer.nativePtr
-        val menu = DbusmenuImpl(windowPtr, menuHolder, GlobalMenu)
+        val windowPtr = peer.nativePointer()
+        val menu = DbusmenuImpl(windowPtr, menuHolder)
         val objectPath = menu.objectPath
         Disposer.register(lastMenu!!, menu.export(conn)::close)
 

@@ -12,13 +12,13 @@ public class SwingMenuHolder<T extends SwingRootMenu<T, ?>> implements MenuHolde
         this.root = root;
     }
 
-    private SwingMenuHolder(JMenuBar bar, String menuItem, DMLog log) {
-        this.root = (T) new SwingRootMenu<>(bar, menuItem, this, log);
+    private SwingMenuHolder(JMenuBar bar, String menuItem) {
+        this.root = (T) new SwingRootMenu<>(bar, menuItem, this);
         this.root.syncChildren();
     }
 
-    public static SwingMenuHolder<?> get(JMenuBar bar, String menuItem, DMLog log) {
-        return new SwingMenuHolder<>(bar, menuItem, log);
+    public static SwingMenuHolder<?> get(JMenuBar bar, String menuItem) {
+        return new SwingMenuHolder<>(bar, menuItem);
     }
 
     @Override

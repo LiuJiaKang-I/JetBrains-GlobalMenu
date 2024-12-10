@@ -2,6 +2,7 @@ package io.gitlab.jfronny.globalmenu.reflect
 
 import com.intellij.openapi.wm.IdeFrame
 import io.gitlab.jfronny.commons.unsafe.reflect.Reflect
+import io.gitlab.jfronny.dbusmenu4j.Peer
 import javax.swing.JFrame
 import javax.swing.JMenuBar
 
@@ -14,11 +15,11 @@ private val getFrame = Reflect.instanceFunction(pfhClass, "getFrame", ifiClass).
  */
 
 fun IdeFrame.introspect(): IdeFrameIntrospection? {
-    if (this is JFrame) return IdeFrameIntrospection(this.peer, this.jMenuBar, this)
+    if (this is JFrame) return IdeFrameIntrospection(Peer.Resolver.resolve(this), this.jMenuBar, this)
     if (pfhClass.isInstance(this)) {
         val frame = getFrame(this) as JFrame
         val root = frame.rootPane
-        return IdeFrameIntrospection(root.peer, root.jMenuBar, frame)
+        return IdeFrameIntrospection(Peer.Resolver.resolve(root), root.jMenuBar, frame)
     }
     return null
 }

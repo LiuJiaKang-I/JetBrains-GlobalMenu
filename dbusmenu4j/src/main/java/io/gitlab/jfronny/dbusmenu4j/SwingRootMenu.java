@@ -11,17 +11,15 @@ public class SwingRootMenu<R extends SwingRootMenu<R, ?>, T extends SwingMenuHol
     protected @Nullable List<JMenuItem> menuItems;
     private final String name;
     private final T holder;
-    private final DMLog log;
 
-    public SwingRootMenu(@Nullable List<JMenuItem> menuItems, String name, T holder, DMLog log) {
+    public SwingRootMenu(@Nullable List<JMenuItem> menuItems, String name, T holder) {
         this.menuItems = menuItems;
         this.name = name;
         this.holder = holder;
-        this.log = log;
     }
 
-    public SwingRootMenu(JMenuBar bar, String name, T holder, DMLog log) {
-        this(IntStream.range(0, bar.getMenuCount()).<JMenuItem>mapToObj(bar::getMenu).toList(), name, holder, log);
+    public SwingRootMenu(JMenuBar bar, String name, T holder) {
+        this(IntStream.range(0, bar.getMenuCount()).<JMenuItem>mapToObj(bar::getMenu).toList(), name, holder);
     }
 
     @Override
@@ -79,14 +77,14 @@ public class SwingRootMenu<R extends SwingRootMenu<R, ?>, T extends SwingMenuHol
     protected void syncChildren() {
         if (menuItems == null) children = null;
         else children = menuItems.stream().<Menu>map(s -> {
-            SwingMenu<R, T> menu = child(s, holder, log);
+            SwingMenu<R, T> menu = child(s, holder);
             menu.syncChildren(2); // setting this to 2 may help prevent missing entries but is SLLOOOOWWW
             return menu;
         }).toList();
     }
 
-    protected SwingMenu<R, T> child(JMenuItem item, T holder, DMLog log) {
-        return new SwingMenu<>(item, holder, log);
+    protected SwingMenu<R, T> child(JMenuItem item, T holder) {
+        return new SwingMenu<>(item, holder);
     }
 
     @Override

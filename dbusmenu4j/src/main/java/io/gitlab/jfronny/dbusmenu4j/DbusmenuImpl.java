@@ -7,18 +7,23 @@ import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public class DbusmenuImpl implements Dbusmenu {
+    private static final Logger log = LoggerFactory.getLogger("dbusmenu4j/DbusmenuImpl");
+    private static final boolean isDebug = System.getProperty("io.gitlab.jfronny.dbusmenu4j.debug") != null;
+
     private final String menuPath;
     private final MenuHolder menuHolder;
-    private final DMLog log;
 
-    public DbusmenuImpl(long windowId, MenuHolder menuHolder, DMLog log) {
+    public DbusmenuImpl(long windowId, MenuHolder menuHolder) {
         this.menuPath = getMenuPath(windowId);
         this.menuHolder = menuHolder;
-        this.log = log;
     }
 
     @Override
@@ -137,18 +142,18 @@ public class DbusmenuImpl implements Dbusmenu {
     }
 
     private EventResult innerEvent(int id, String eventId, @Nullable Variant<?> data, @Nullable UInt32 timestamp) {
-        if (log.isDebug()) log.warn("Event " + eventId + " for menu " + id + " (" + menuHolder.find(id) + ")");
+        if (isDebug) log.warn("Event {} for menu {} ({})", eventId, id, menuHolder.find(id));
         try {
             Menu menu = menuHolder.find(id);
             if (menu == null) return new EventResult.NotFound();
             switch (eventId) {
                 case "clicked" -> menu.onEvent();
                 case "opened" -> menu.maybeUpdate();
-                default -> log.warn("Unhandled event " + eventId + " for menu " + id);
+                default -> log.warn("Unhandled event {} for menu {}", eventId, id);
             }
             return new EventResult.Success();
         } catch (Exception e) {
-            log.error("Failed to handle event " + eventId + " for menu " + id, e);
+            log.error("Failed to handle event {} for menu {}", eventId, id, e);
             return new EventResult.Failure(e);
         }
     }
@@ -176,14 +181,14 @@ public class DbusmenuImpl implements Dbusmenu {
     }
 
     private EventResult innerAboutToShow(int id) {
-        if (log.isDebug()) log.warn("About to show menu " + id);
+        if (isDebug) log.warn("About to show menu {}", id);
         try {
             Menu menu = menuHolder.find(id);
             if (menu == null) return new EventResult.NotFound();
             menu.maybeUpdate();
             return new EventResult.Success();
         } catch (Exception e) {
-            log.error("Failed to update menu " + id, e);
+            log.error("Failed to update menu {}", id, e);
             return new EventResult.Failure(e);
         }
     }
@@ -194,24 +199,20 @@ public class DbusmenuImpl implements Dbusmenu {
         record Failure(Exception e) implements EventResult {}
     }
 
-    private DMLog getLog() {
-        return log;
-    }
-
     private final DBusSigHandler<ItemsPropertiesUpdated> itemsPropertiesUpdated = (item) -> {
-        if (getLog().isDebug()) getLog().warn("Items properties updated (updated: " + item.getUpdatedProps() + ", removed: " + item.getRemovedProps() + ")");
+        if (isDebug) log.warn("Items properties updated (updated: {}, removed: {})", item.getUpdatedProps(), item.getRemovedProps());
     };
 
     private final DBusSigHandler<LayoutUpdated> layoutUpdated = (layout) -> {
-        if (getLog().isDebug()) getLog().warn("Layout updated (parent: " + layout.getParent() + ", revision: " + layout.getRevision() + ")");
+        if (isDebug) log.warn("Layout updated (parent: {}, revision: {})", layout.getParent(), layout.getRevision());
     };
 
     private final DBusSigHandler<ItemActivationRequested> itemActivationRequested = (item) -> {
-        if (getLog().isDebug()) getLog().warn("Item activation requested: " + item.getId());
+        if (isDebug) log.warn("Item activation requested: {}", item.getId());
     };
 
     public AutoCloseable export(DBusConnection conn) throws DBusException {
-        if (log.isDebug()) log.warn("Exporting menu " + menuPath + " to " + conn.getUniqueName());
+        if (isDebug) log.warn("Exporting menu {} to {}", menuPath, conn.getUniqueName());
         conn.exportObject(menuPath, this);
         List<AutoCloseable> signals = List.of(
                 conn.addSigHandler(ItemsPropertiesUpdated.class, itemsPropertiesUpdated),

@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.swing.*
 
-class ActionMenu(menuItem: JMenuItem?, id: Int, holder: ActionMenuHolder) : SwingMenu<ActionRootMenu, ActionMenuHolder>(menuItem, id, holder, GlobalMenu) {
+class ActionMenu(menuItem: JMenuItem?, id: Int, holder: ActionMenuHolder) : SwingMenu<ActionRootMenu, ActionMenuHolder>(menuItem, id, holder) {
     constructor(menuItem: JMenuItem, holder: ActionMenuHolder) : this(menuItem, holder.getId(menuItem), holder)
     constructor(id: Int, holder: ActionMenuHolder) : this(null, id, holder)
 
