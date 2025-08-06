@@ -3,8 +3,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     java
-    kotlin("jvm") version "2.1.0"
-    id("org.jetbrains.intellij.platform") version "2.2.1"
+    kotlin("jvm") version "2.2.0"
+    id("org.jetbrains.intellij.platform") version "2.7.0"
     id("jf.autoversion")
 }
 
@@ -16,6 +16,7 @@ repositories {
 
     intellijPlatform {
         defaultRepositories()
+        snapshots()
     }
 }
 
@@ -23,7 +24,7 @@ val extraResources by configurations.creating
 
 dependencies {
     intellijPlatform {
-        intellijIdeaCommunity("251.14649.49") // https://plugins.jetbrains.com/docs/intellij/intellij-artifacts.html
+        intellijIdeaUltimate("2025.2") // https://plugins.jetbrains.com/docs/intellij/intellij-artifacts.html
     }
     extraResources(project(mapOf("path" to ":native", "configuration" to "results")))
     implementation("io.gitlab.jfronny:commons:1.8.0-SNAPSHOT")
@@ -63,7 +64,7 @@ tasks {
 
     patchPluginXml {
         sinceBuild.set("243")
-        untilBuild.set("251.*")
+        untilBuild.set("252.*")
         changeNotes = changelogHtml
     }
 
