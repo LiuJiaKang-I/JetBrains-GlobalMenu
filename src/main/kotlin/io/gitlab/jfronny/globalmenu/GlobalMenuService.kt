@@ -96,7 +96,7 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
 
         if (peer is Peer.WL) {
             peer.performLocked {
-                val ptr = GlobalMenu.Native.createMenu(windowPtr)
+                val ptr = GlobalMenu.Native.createMenu(peer.surfacePtr)
                 // this segfaults for some reason
                 // Yes, we leak memory on every activation without this, but unless the crash is fixed, that is the better option
 //                Disposer.register(lastMenu!!) { GlobalMenu.Native.destroyMenu(ptr) }

@@ -24,7 +24,7 @@ val extraResources by configurations.creating
 
 dependencies {
     intellijPlatform {
-        intellijIdeaUltimate("2025.2") // https://plugins.jetbrains.com/docs/intellij/intellij-artifacts.html
+        intellijIdeaUltimate("2025.2.1") // https://plugins.jetbrains.com/docs/intellij/intellij-artifacts.html
     }
     extraResources(project(path = ":native", configuration = "results"))
     implementation("io.gitlab.jfronny:commons:1.8.0-SNAPSHOT")

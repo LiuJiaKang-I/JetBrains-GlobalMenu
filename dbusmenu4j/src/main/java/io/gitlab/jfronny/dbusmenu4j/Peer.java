@@ -55,9 +55,11 @@ public sealed interface Peer {
         private static final Function<Object, Insets> getInsetsMethod;
         private static final Field nativePtrField;
         private static final BiConsumer<Object, Runnable> performLockedMethod;
+        private static final Field wlSurfaceField;
         private static final Field decorationField;
         private static final Consumer<Object> markRepaintNeededMethod;
         private static final Field isUndecoratedField;
+        private static final Function<Object, Long> getWlSurfacePtr;
 
         private final Object peer;
 
@@ -66,6 +68,7 @@ public sealed interface Peer {
                 klazz = Class.forName("sun.awt.wl.WLComponentPeer");
                 nativePtrField = Resolver.withAccess(klazz.getDeclaredField("nativePtr"));
                 performLockedMethod = Resolver.uncheck(Reflect.instanceProcedure(klazz, "performLocked", Runnable.class));
+                wlSurfaceField = Resolver.withAccess(klazz.getDeclaredField("wlSurface"));
                 containerPeerClass = Class.forName("java.awt.peer.ContainerPeer");
                 getInsetsMethod = Resolver.uncheck(Reflect.instanceFunction(containerPeerClass, "getInsets", Insets.class));
                 Class<?> decoratedPeerClass = Class.forName("sun.awt.wl.WLDecoratedPeer");
@@ -73,6 +76,8 @@ public sealed interface Peer {
                 Class<?> frameDecorationClass = Class.forName("sun.awt.wl.WLFrameDecoration");
                 markRepaintNeededMethod = Resolver.uncheck(Reflect.instanceProcedure(frameDecorationClass, "markRepaintNeeded"));
                 isUndecoratedField = Resolver.withAccess(frameDecorationClass.getDeclaredField("isUndecorated"));
+                Class<?> wlSurfaceClass = Class.forName("sun.awt.wl.WLMainSurface");
+                getWlSurfacePtr = Resolver.uncheck(Reflect.instanceFunction(wlSurfaceClass, "getWlSurfacePtr", long.class));
             } catch (Throwable e) {
                 throw new RuntimeException(e);
             }
@@ -104,6 +109,14 @@ public sealed interface Peer {
         public long nativePointer() {
             try {
                 return nativePtrField.getLong(peer);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public long getSurfacePtr() {
+            try {
+                return getWlSurfacePtr.apply(wlSurfaceField.get(peer));
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }

@@ -8,13 +8,10 @@
 // see WLComponentPeer.c in JDK
 struct WLFrame {
     jobject pad1;
-    struct wl_surface *wl_surface;
     void *pad2;
     void *pad3;
     void *pad4;
     void *pad5;
-    void *pad6;
-    void *pad7;
     jboolean toplevel;
     union {
         struct xdg_toplevel *xdg_toplevel;
@@ -62,13 +59,12 @@ JNIEXPORT jboolean JNICALL Java_io_gitlab_jfronny_globalmenu_Native_isMenuSuppor
     return org_kde_kwin_appmenu_manager != NULL;
 }
 
-JNIEXPORT jlong JNICALL Java_io_gitlab_jfronny_globalmenu_Native_createMenu(JNIEnv *env, jobject obj, jlong ptr) {
+JNIEXPORT jlong JNICALL Java_io_gitlab_jfronny_globalmenu_Native_createMenu(JNIEnv *env, jobject obj, jlong wl_surface_ptr) {
     if (org_kde_kwin_appmenu_manager == NULL) {
         (*env)->ThrowNew(env, (*env)->FindClass(env, "java/lang/RuntimeException"), "Appmenu manager not initialized");
         return 0;
     }
-    struct WLFrame *frame = (struct WLFrame *) ptr;
-    return (jlong) (intptr_t) org_kde_kwin_appmenu_manager_create(org_kde_kwin_appmenu_manager, frame->wl_surface);
+    return (jlong) (intptr_t) org_kde_kwin_appmenu_manager_create(org_kde_kwin_appmenu_manager, (struct wl_surface *) wl_surface_ptr);
 }
 
 JNIEXPORT void JNICALL Java_io_gitlab_jfronny_globalmenu_Native_destroyMenu(JNIEnv *env, jobject obj, jlong ptr) {
