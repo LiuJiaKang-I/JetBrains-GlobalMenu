@@ -3,8 +3,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     java
-    kotlin("jvm") version "2.2.0"
-    id("org.jetbrains.intellij.platform") version "2.7.0"
+    kotlin("jvm") version "2.2.21"
+    id("org.jetbrains.intellij.platform") version "2.10.4"
     id("jf.autoversion")
 }
 
@@ -24,7 +24,7 @@ val extraResources by configurations.creating
 
 dependencies {
     intellijPlatform {
-        intellijIdeaUltimate("2025.2.1") // https://plugins.jetbrains.com/docs/intellij/intellij-artifacts.html
+        intellijIdea("253.28294.251") // https://plugins.jetbrains.com/docs/intellij/intellij-artifacts.html
     }
     extraResources(project(path = ":native", configuration = "results"))
     implementation("io.gitlab.jfronny:commons:1.8.0-SNAPSHOT")
@@ -63,8 +63,8 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("243")
-        untilBuild.set("252.*")
+        sinceBuild.set("253")
+        untilBuild.set("253.*")
         changeNotes = changelogHtml
     }
 
@@ -79,9 +79,13 @@ tasks {
     }
 
     runIde {
+        environment("WAYLAND_DEBUG", "1")
+        environment("_JAVA_OPTIONS", "")
         jvmArgs(
             "-Dawt.toolkit.name=WLToolkit",
-            "-Dio.gitlab.jfronny.globalmenu.debug"
+            "-Dio.gitlab.jfronny.globalmenu.debug",
+            "-Dsun.awt.wl.WindowDecorationStyle=builtin",
+            "-Djava.util.prefs.userRoot=${layout.buildDirectory.dir("userPrefs").get().asFile.absolutePath}"
         )
     }
 }

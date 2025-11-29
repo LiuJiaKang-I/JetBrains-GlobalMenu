@@ -29,6 +29,7 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
         onActivate(introspection.peer, introspection.frame, introspection.jMenuBar)
     }
 
+    val decorationCache: MutableMap<Long, Long> = mutableMapOf() // TODO: this is never cleaned up
     private fun onActivate(peer: Peer, frame: Window, menuBar: JMenuBar?) {
         if ((peer !is Peer.WL || GlobalMenu.Native.isMenuSupported) && GMSettings.getInstance().state.menu && menuBar != null) addGlobalMenu(menuBar, peer)
         else connection?.unExportObject(DbusmenuImpl.getMenuPath(peer.nativePointer()))
@@ -37,11 +38,17 @@ class GlobalMenuService(private val app: Application) : ApplicationActivationLis
             && GMSettings.getInstance().state.decorations
             && peer is Peer.WL) {
             if (peer.isDecorated) {
-                peer.isDecorated = false
+                peer.performLocked { peer.isDecorated = false }
                 frame.forceRedraw()
-                val decoration = GlobalMenu.Native.createDecoration(peer.nativePointer())
-//                Disposer.register(lastMenu!!) { GlobalMenu.Native.destroyDecoration(decoration)
-                GlobalMenu.Native.setDecoration(decoration, 2)
+                peer.performLocked {
+                    val ptr = peer.nativePointer()
+                    val decoration = decorationCache.computeIfAbsent(ptr) { GlobalMenu.Native.createDecoration(it) }
+//                    Disposer.register(lastMenu!!) {
+//                        decorationCache.remove(ptr)
+//                        GlobalMenu.Native.destroyDecoration(decoration)
+//                    }
+                    GlobalMenu.Native.setDecoration(decoration, 2)
+                }
             }
         }
         ApplicationManager.getApplication().invokeLater {

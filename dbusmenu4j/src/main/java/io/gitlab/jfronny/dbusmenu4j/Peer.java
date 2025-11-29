@@ -57,8 +57,9 @@ public sealed interface Peer {
         private static final BiConsumer<Object, Runnable> performLockedMethod;
         private static final Field wlSurfaceField;
         private static final Field decorationField;
-        private static final Consumer<Object> markRepaintNeededMethod;
         private static final Field isUndecoratedField;
+        private static final BiConsumer<Object, Boolean> resetDecorationMethod;
+        private static final BiConsumer<Object, Boolean> markRepaintNeededMethod;
         private static final Function<Object, Long> getWlSurfacePtr;
 
         private final Object peer;
@@ -73,9 +74,10 @@ public sealed interface Peer {
                 getInsetsMethod = Resolver.uncheck(Reflect.instanceFunction(containerPeerClass, "getInsets", Insets.class));
                 Class<?> decoratedPeerClass = Class.forName("sun.awt.wl.WLDecoratedPeer");
                 decorationField = Resolver.withAccess(decoratedPeerClass.getDeclaredField("decoration"));
-                Class<?> frameDecorationClass = Class.forName("sun.awt.wl.WLFrameDecoration");
-                markRepaintNeededMethod = Resolver.uncheck(Reflect.instanceProcedure(frameDecorationClass, "markRepaintNeeded"));
-                isUndecoratedField = Resolver.withAccess(frameDecorationClass.getDeclaredField("isUndecorated"));
+                isUndecoratedField = Resolver.withAccess(decoratedPeerClass.getDeclaredField("isUndecorated"));
+                resetDecorationMethod = Resolver.uncheck(Reflect.instanceProcedure(decoratedPeerClass, "resetDecoration", boolean.class));
+                Class<?> frameDecorationClass = Class.forName("sun.awt.wl.FrameDecoration");
+                markRepaintNeededMethod = Resolver.uncheck(Reflect.instanceProcedure(frameDecorationClass, "markRepaintNeeded", boolean.class));
                 Class<?> wlSurfaceClass = Class.forName("sun.awt.wl.WLMainSurface");
                 getWlSurfacePtr = Resolver.uncheck(Reflect.instanceFunction(wlSurfaceClass, "getWlSurfacePtr", long.class));
             } catch (Throwable e) {
@@ -94,8 +96,9 @@ public sealed interface Peer {
         public void setDecorated(boolean decorated) {
             try {
                 Object decoration = decorationField.get(peer);
-                isUndecoratedField.setBoolean(decoration, !decorated);
-                markRepaintNeededMethod.accept(decoration);
+                isUndecoratedField.setBoolean(peer, !decorated);
+                markRepaintNeededMethod.accept(decoration, true);
+                resetDecorationMethod.accept(peer, false);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
