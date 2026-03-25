@@ -2,7 +2,7 @@
 
 steps:
   - name: build_test
-    image: gradle:8.14-jdk21-noble
+    image: gradle:9.4-jdk25-noble
     pull: true
     commands:
       - gradle --build-cache :dbusmenu4j:publish -Pmaven="https://maven.frohnmeyer-wds.de/artifacts"

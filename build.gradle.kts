@@ -1,18 +1,17 @@
-import io.gitlab.jfronny.scripts.changelogHtml
+import dev.jfronny.autoversion.changelogHtml
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     java
-    kotlin("jvm") version "2.2.21"
-    id("org.jetbrains.intellij.platform") version "2.10.4"
-    id("jf.autoversion")
+    kotlin("jvm") version "2.3.20" // https://www.jetbrains.com/legal/third-party-software/?product=iiu
+    id("org.jetbrains.intellij.platform") version "2.13.1"
+    id("dev.jfronny.autoversion")
 }
 
 group = "io.gitlab.jfronny"
 
 repositories {
     mavenCentral()
-    maven("https://maven.frohnmeyer-wds.de/artifacts")
 
     intellijPlatform {
         defaultRepositories()
@@ -24,11 +23,11 @@ val extraResources by configurations.creating
 
 dependencies {
     intellijPlatform {
-        intellijIdea("253.28294.251") // https://plugins.jetbrains.com/docs/intellij/intellij-artifacts.html
+        intellijIdea("2026.1") // https://plugins.jetbrains.com/docs/intellij/intellij-artifacts.html
     }
     extraResources(project(path = ":native", configuration = "results"))
-    implementation("io.gitlab.jfronny:commons:1.8.0-SNAPSHOT")
-    implementation("io.gitlab.jfronny:commons-unsafe:1.8.0-SNAPSHOT")
+    implementation("dev.jfronny.commons:commons:2.0.0")
+    implementation("dev.jfronny.commons:commons-unsafe:2.0.0")
     implementation(project(":dbusmenu4j"))
 }
 
@@ -55,16 +54,16 @@ tasks {
 
     // Set the JVM compatibility versions
     withType<JavaCompile> {
-        sourceCompatibility = "21"
-        targetCompatibility = "21"
+        sourceCompatibility = "25"
+        targetCompatibility = "25"
     }
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        compilerOptions.jvmTarget = JvmTarget.JVM_21
+        compilerOptions.jvmTarget = JvmTarget.JVM_25
     }
 
     patchPluginXml {
-        sinceBuild.set("253")
-        untilBuild.set("253.*")
+        sinceBuild.set("261")
+        untilBuild.set("261.*")
         changeNotes = changelogHtml
     }
 

@@ -38,13 +38,13 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <applicationConfigurable parentId="appearance" instance="io.gitlab.jfronny.globalmenu.settings.SettingsConfigurable"
-                                 id="io.gitlab.jfronny.globalmenu.settings.SettingsConfigurable"
+        <applicationConfigurable parentId="appearance" instance="dev.jfronny.globalmenu.settings.SettingsConfigurable"
+                                 id="dev.jfronny.globalmenu.settings.SettingsConfigurable"
                                  displayName="Global Menu"/>
-        <applicationService serviceImplementation="io.gitlab.jfronny.globalmenu.settings.GMSettings"/>
+        <applicationService serviceImplementation="dev.jfronny.globalmenu.settings.GMSettings"/>
     </extensions>
     <applicationListeners>
-        <listener class="io.gitlab.jfronny.globalmenu.GlobalMenuService" topic="com.intellij.openapi.application.ApplicationActivationListener"/>
-        <listener class="io.gitlab.jfronny.globalmenu.InitializationComponent" topic="com.intellij.ide.AppLifecycleListener"/>
+        <listener class="dev.jfronny.globalmenu.GlobalMenuService" topic="com.intellij.openapi.application.ApplicationActivationListener"/>
+        <listener class="dev.jfronny.globalmenu.InitializationComponent" topic="com.intellij.ide.AppLifecycleListener"/>
     </applicationListeners>
 </idea-plugin>

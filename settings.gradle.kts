@@ -11,7 +11,8 @@ pluginManagement {
         }
     }
     plugins {
-        id("jf.autoversion") version "1.6-SNAPSHOT"
+        id("dev.jfronny.autoversion") version "1.2"
+        id("jf.maven-publish") version "1.8-SNAPSHOT"
     }
 }
 

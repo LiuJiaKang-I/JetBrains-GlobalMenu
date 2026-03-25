@@ -16,15 +16,14 @@ version = rootProject.version
 
 repositories {
     mavenCentral()
-    maven("https://maven.frohnmeyer-wds.de/artifacts")
 }
 
 dependencies {
-    compileOnly("org.jetbrains:annotations:26.0.1")
+    compileOnly("org.jetbrains:annotations:26.0.2")
     api("com.github.hypfvieh:dbus-java-core:5.1.0")
     implementation("com.github.hypfvieh:dbus-java-transport-native-unixsocket:5.1.0")
-    implementation("io.gitlab.jfronny:commons:1.8.0-SNAPSHOT")
-    implementation("io.gitlab.jfronny:commons-unsafe:1.8.0-SNAPSHOT")
+    implementation("dev.jfronny.commons:commons:2.0.0")
+    implementation("dev.jfronny.commons:commons-unsafe:2.0.0")
 }
 
 abstract class InterfaceGenerateTask : DefaultTask() {
@@ -89,7 +88,7 @@ abstract class InterfaceGenerateTask : DefaultTask() {
                     val impl = analyze[analyze.keys.first { it.path.contains(type) }]!!
                     val found = fieldPattern.findAll(impl).toList()
                     if (found.size != 2) throw IllegalStateException("Tuple must have exactly two fields")
-                    "io.gitlab.jfronny.dbusmenu4j.DPair<${found[0].groups[1]!!.value}, ${found[1].groups[1]!!.value}>"
+                    "dev.jfronny.dbusmenu4j.DPair<${found[0].groups[1]!!.value}, ${found[1].groups[1]!!.value}>"
                 }
             })
         }

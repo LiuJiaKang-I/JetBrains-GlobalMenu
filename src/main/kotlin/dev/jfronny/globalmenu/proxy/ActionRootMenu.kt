@@ -1,0 +1,31 @@
+package dev.jfronny.globalmenu.proxy
+
+import com.intellij.openapi.actionSystem.impl.ActionMenu
+import com.intellij.openapi.application.EDT
+import dev.jfronny.globalmenu.reflect.invoke
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import javax.swing.JMenuBar
+import javax.swing.JMenuItem
+
+class ActionRootMenu(bar: JMenuBar, name: String, holder: ActionMenuHolder): dev.jfronny.dbusmenu4j.SwingRootMenu<ActionRootMenu, ActionMenuHolder>(bar, name, holder) {
+    override fun runOnEDT(runnable: Runnable) {
+        runBlocking {
+            launch(Dispatchers.EDT) {
+                runnable.invoke()
+            }
+        }
+    }
+
+    fun update(items: List<ActionMenu>) {
+        menuItems = items
+        syncChildren()
+    }
+
+    init {
+        syncChildren()
+    }
+
+    override fun child(item: JMenuItem, holder: ActionMenuHolder) = ActionMenu(item, holder)
+}

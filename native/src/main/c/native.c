@@ -40,7 +40,7 @@ static const struct wl_registry_listener wl_registry_listener = {
         .global_remove = registry_global_remove,
 };
 
-JNIEXPORT void JNICALL Java_io_gitlab_jfronny_globalmenu_Native_init(JNIEnv *env, jobject obj, jlong ptr) {
+JNIEXPORT void JNICALL Java_dev_jfronny_globalmenu_Native_init(JNIEnv *env, jobject obj, jlong ptr) {
     struct wl_display *wl_display = (struct wl_display *) ptr;
     struct wl_registry *wl_registry = wl_display_get_registry(wl_display);
     if (wl_registry == NULL) {
@@ -55,11 +55,11 @@ JNIEXPORT void JNICALL Java_io_gitlab_jfronny_globalmenu_Native_init(JNIEnv *env
     }
 }
 
-JNIEXPORT jboolean JNICALL Java_io_gitlab_jfronny_globalmenu_Native_isMenuSupported(JNIEnv *env, jobject obj) {
+JNIEXPORT jboolean JNICALL Java_dev_jfronny_globalmenu_Native_isMenuSupported(JNIEnv *env, jobject obj) {
     return org_kde_kwin_appmenu_manager != NULL;
 }
 
-JNIEXPORT jlong JNICALL Java_io_gitlab_jfronny_globalmenu_Native_createMenu(JNIEnv *env, jobject obj, jlong wl_surface_ptr) {
+JNIEXPORT jlong JNICALL Java_dev_jfronny_globalmenu_Native_createMenu(JNIEnv *env, jobject obj, jlong wl_surface_ptr) {
     if (org_kde_kwin_appmenu_manager == NULL) {
         (*env)->ThrowNew(env, (*env)->FindClass(env, "java/lang/RuntimeException"), "Appmenu manager not initialized");
         return 0;
@@ -67,13 +67,13 @@ JNIEXPORT jlong JNICALL Java_io_gitlab_jfronny_globalmenu_Native_createMenu(JNIE
     return (jlong) (intptr_t) org_kde_kwin_appmenu_manager_create(org_kde_kwin_appmenu_manager, (struct wl_surface *) wl_surface_ptr);
 }
 
-JNIEXPORT void JNICALL Java_io_gitlab_jfronny_globalmenu_Native_destroyMenu(JNIEnv *env, jobject obj, jlong ptr) {
+JNIEXPORT void JNICALL Java_dev_jfronny_globalmenu_Native_destroyMenu(JNIEnv *env, jobject obj, jlong ptr) {
     struct org_kde_kwin_appmenu *frame = (struct org_kde_kwin_appmenu *) ptr;
     org_kde_kwin_appmenu_release(frame);
     org_kde_kwin_appmenu_destroy(frame);
 }
 
-JNIEXPORT void JNICALL Java_io_gitlab_jfronny_globalmenu_Native_setMenuAddress(JNIEnv *env, jobject obj, jlong ptr, jstring serviceName, jstring objectPath) {
+JNIEXPORT void JNICALL Java_dev_jfronny_globalmenu_Native_setMenuAddress(JNIEnv *env, jobject obj, jlong ptr, jstring serviceName, jstring objectPath) {
     struct org_kde_kwin_appmenu *frame = (struct org_kde_kwin_appmenu *) ptr;
     char *service_name = (*env)->GetStringUTFChars(env, serviceName, NULL);
     char *object_path = (*env)->GetStringUTFChars(env, objectPath, NULL);
@@ -82,11 +82,11 @@ JNIEXPORT void JNICALL Java_io_gitlab_jfronny_globalmenu_Native_setMenuAddress(J
     (*env)->ReleaseStringUTFChars(env, objectPath, object_path);
 }
 
-JNIEXPORT jboolean JNICALL Java_io_gitlab_jfronny_globalmenu_Native_isDecorationSupported(JNIEnv *env, jobject obj) {
+JNIEXPORT jboolean JNICALL Java_dev_jfronny_globalmenu_Native_isDecorationSupported(JNIEnv *env, jobject obj) {
     return zxdg_decoration_manager_v1 != NULL;
 }
 
-JNIEXPORT jlong JNICALL Java_io_gitlab_jfronny_globalmenu_Native_createDecoration(JNIEnv *env, jobject obj, jlong ptr) {
+JNIEXPORT jlong JNICALL Java_dev_jfronny_globalmenu_Native_createDecoration(JNIEnv *env, jobject obj, jlong ptr) {
     if (zxdg_decoration_manager_v1 == NULL) {
         (*env)->ThrowNew(env, (*env)->FindClass(env, "java/lang/RuntimeException"), "Decoration manager not initialized");
         return 0;
@@ -103,13 +103,13 @@ JNIEXPORT jlong JNICALL Java_io_gitlab_jfronny_globalmenu_Native_createDecoratio
     return (jlong) (intptr_t) zxdg_decoration_manager_v1_get_toplevel_decoration(zxdg_decoration_manager_v1, frame->xdg_toplevel);
 }
 
-JNIEXPORT void JNICALL Java_io_gitlab_jfronny_globalmenu_Native_destroyDecoration(JNIEnv *env, jobject obj, jlong ptr) {
+JNIEXPORT void JNICALL Java_dev_jfronny_globalmenu_Native_destroyDecoration(JNIEnv *env, jobject obj, jlong ptr) {
     struct zxdg_toplevel_decoration_v1 *frame = (struct zxdg_toplevel_decoration_v1 *) ptr;
     zxdg_toplevel_decoration_v1_unset_mode(frame);
     zxdg_toplevel_decoration_v1_destroy(frame);
 }
 
-JNIEXPORT void JNICALL Java_io_gitlab_jfronny_globalmenu_Native_setDecoration(JNIEnv *env, jobject obj, jlong ptr, jint mode) {
+JNIEXPORT void JNICALL Java_dev_jfronny_globalmenu_Native_setDecoration(JNIEnv *env, jobject obj, jlong ptr, jint mode) {
     struct zxdg_toplevel_decoration_v1 *frame = (struct zxdg_toplevel_decoration_v1 *) ptr;
     if (mode) {
         zxdg_toplevel_decoration_v1_set_mode(frame, mode);
