@@ -26,8 +26,6 @@ dependencies {
         intellijIdea("2026.1") // https://plugins.jetbrains.com/docs/intellij/intellij-artifacts.html
     }
     extraResources(project(path = ":native", configuration = "results"))
-    implementation("dev.jfronny.commons:commons:2.0.0")
-    implementation("dev.jfronny.commons:commons-unsafe:2.0.0")
     implementation(project(":dbusmenu4j"))
 }
 
@@ -54,11 +52,11 @@ tasks {
 
     // Set the JVM compatibility versions
     withType<JavaCompile> {
-        sourceCompatibility = "25"
-        targetCompatibility = "25"
+        sourceCompatibility = "21"
+        targetCompatibility = "21"
     }
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        compilerOptions.jvmTarget = JvmTarget.JVM_25
+        compilerOptions.jvmTarget = JvmTarget.JVM_21
     }
 
     patchPluginXml {

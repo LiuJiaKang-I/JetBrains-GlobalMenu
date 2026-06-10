@@ -22,8 +22,6 @@ dependencies {
     compileOnly("org.jetbrains:annotations:26.0.2")
     api("com.github.hypfvieh:dbus-java-core:5.1.0")
     implementation("com.github.hypfvieh:dbus-java-transport-native-unixsocket:5.1.0")
-    implementation("dev.jfronny.commons:commons:2.0.0")
-    implementation("dev.jfronny.commons:commons-unsafe:2.0.0")
 }
 
 abstract class InterfaceGenerateTask : DefaultTask() {
@@ -113,6 +111,10 @@ publishing {
 }
 
 tasks {
+    withType<JavaCompile> {
+        sourceCompatibility = "21"
+        targetCompatibility = "21"
+    }
     val generateDbus by registering(InterfaceGenerateTask::class) {
         group = "custom"
         objectPath = "/"
